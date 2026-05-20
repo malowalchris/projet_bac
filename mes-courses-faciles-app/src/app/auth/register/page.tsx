@@ -66,9 +66,12 @@ export default function RegisterPage() {
                 type="password"
                 placeholder="••••••••"
                 className="input-field pl-12"
+                pattern="(?=.*\d)(?=.*[A-Z]).{8,}"
+                title="8 caractères minimum, une majuscule et un chiffre"
                 required
               />
             </div>
+            <p className="text-[10px] text-slate-400 font-medium">Min. 8 caractères, une majuscule et un chiffre.</p>
           </div>
 
           <div className="pt-2">

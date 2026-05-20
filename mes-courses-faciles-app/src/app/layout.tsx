@@ -10,8 +10,8 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Mes Courses Faciles | Le meilleur des magasins de Libreville à votre porte",
-  description: "Faites vos courses en ligne dans les plus grands magasins du Gabon (Mbolo, Géant Casino, Prix Import) et faites-vous livrer rapidement.",
+  title: "MesAchats241 | Le meilleur des magasins de Libreville à votre porte",
+  description: "MesAchats241 est une plateforme e-commerce centralisant les magasins alimentaires et de nettoyage de Libreville, Gabon.",
   manifest: "/manifest.json",
 };
 

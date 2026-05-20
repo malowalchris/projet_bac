@@ -118,11 +118,12 @@ export default function CheckoutPage() {
               <div className="space-y-6 animate-in">
                 <Card className="p-8" isHoverable={false}>
                   <h2 className="text-2xl font-bold text-slate-800 mb-6">Mode de paiement</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
                       { id: 'airtel', name: 'Airtel Money', icon: Smartphone, color: 'border-red-500 text-red-500' },
                       { id: 'moov', name: 'Moov Money', icon: Smartphone, color: 'border-blue-500 text-blue-500' },
-                      { id: 'cash', name: 'Espèces', icon: Wallet, color: 'border-green-500 text-green-500' }
+                      { id: 'card', name: 'Carte Bancaire', icon: CreditCard, color: 'border-brand-primary text-brand-primary' },
+                      { id: 'cash', name: 'Paiement à la livraison', icon: Wallet, color: 'border-green-500 text-green-500' }
                     ].map((method) => (
                       <button key={method.id} className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all hover:bg-slate-50 ${method.id === 'airtel' ? method.color : 'border-slate-100'}`}>
                         <method.icon size={32} />

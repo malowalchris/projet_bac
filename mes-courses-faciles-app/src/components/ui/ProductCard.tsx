@@ -11,15 +11,20 @@ interface ProductCardProps {
   image: string;
   category: string;
   unit: string;
+  storeId?: string;
 }
 
-export const ProductCard = ({ name, price, image, category, unit }: ProductCardProps) => {
+export const ProductCard = ({ name, price, image, category, unit, storeId }: ProductCardProps) => {
   const { addToCart } = useCart();
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ name, price, image, category, unit });
+    if (!storeId) {
+      console.error("storeId is missing for product", name);
+      return;
+    }
+    addToCart({ name, price, image, category, unit, storeId });
   };
 
   return (

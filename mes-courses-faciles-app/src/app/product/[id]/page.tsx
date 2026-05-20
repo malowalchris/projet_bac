@@ -121,7 +121,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </div>
                 <Button
                   onClick={() => {
-                    for(let i=0; i<quantity; i++) addToCart(product);
+                    // Injecting a default storeId for the detailed view if missing
+                    const productWithStore = { ...product, storeId: 'mbolo' };
+                    for(let i=0; i<quantity; i++) addToCart(productWithStore);
                   }}
                   size="lg"
                   className="flex-1 h-14 rounded-2xl shadow-xl shadow-brand-primary/30"

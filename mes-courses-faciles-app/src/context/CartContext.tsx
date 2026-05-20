@@ -15,25 +15,31 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Omit<CartItem, 'quantity' | 'id'> & { name: string }) => void;
+  addToCart: (product: Omit<CartItem, 'quantity' | 'id'> & { name: string; storeId: string }) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  activeStoreId: string | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [activeStoreId, setActiveStoreId] = useState<string | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem('mcf_cart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart);
+        setCart(parsed);
+        if (parsed.length > 0) {
+          setActiveStoreId(parsed[0].storeId);
+        }
       } catch (e) {
         console.error("Failed to load cart", e);
       }
@@ -45,7 +51,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('mcf_cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Omit<CartItem, 'quantity' | 'id'> & { name: string }) => {
+  const addToCart = (product: Omit<CartItem, 'quantity' | 'id'> & { name: string; storeId: string }) => {
+    if (activeStoreId && activeStoreId !== product.storeId) {
+      const confirmNew = window.confirm("Votre panier contient déjà des produits d'un autre magasin. Souhaitez-vous vider votre panier pour commander dans ce magasin ?");
+      if (!confirmNew) return;
+
+      setCart([{
+        id: product.name,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        unit: product.unit || 'unité',
+        category: product.category || 'Général',
+        storeId: product.storeId
+      }]);
+      setActiveStoreId(product.storeId);
+      return;
+    }
+
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.name); // Using name as ID for mock products
 
@@ -54,6 +78,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
           item.id === product.name ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
+
+      if (prevCart.length === 0) {
+        setActiveStoreId(product.storeId);
+      }
+
       return [...prevCart, {
         id: product.name,
         name: product.name,
@@ -61,7 +90,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         image: product.image,
         quantity: 1,
         unit: product.unit || 'unité',
-        category: product.category || 'Général'
+        category: product.category || 'Général',
+        storeId: product.storeId
       }];
     });
   };
@@ -80,7 +110,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    setActiveStoreId(null);
+  };
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -93,7 +126,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       updateQuantity,
       clearCart,
       totalItems,
-      totalPrice
+      totalPrice,
+      activeStoreId
     }}>
       {children}
     </CartContext.Provider>

@@ -2,6 +2,7 @@
 
 import React, { useState, use } from 'react';
 import Image from 'next/image';
+import { useCart } from '@/context/CartContext';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/Button';
 import { Search, Filter, ChevronRight, LayoutGrid, List, SlidersHorizontal } from 'lucide-react';
@@ -23,7 +24,11 @@ const PRODUCTS = [
 
 export default function StorePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
+  const { addToCart } = useCart();
   const [activeCategory, setActiveCategory] = useState('Tous');
+
+  // We need to inject storeId into ProductCard, so we enhance the card rendering
+  const productsWithStore = PRODUCTS.map(p => ({ ...p, storeId: resolvedParams.id }));
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -131,7 +136,7 @@ export default function StorePage({ params }: { params: Promise<{ id: string }> 
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {PRODUCTS.map((product, i) => (
+              {productsWithStore.map((product, i) => (
                 <ProductCard key={i} {...product} />
               ))}
             </div>
