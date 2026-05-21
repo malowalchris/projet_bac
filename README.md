@@ -1,12 +1,13 @@
-# Mes Courses Faciles - Refonte Moderne
+# Mes Courses Faciles - Plateforme E-Commerce Marketplace B2C
 
-Ce projet est une refonte complète d'une application e-commerce multi-magasin (initialement en PHP/HTML) vers une architecture moderne utilisant **Next.js 15**, **React 19**, **Tailwind CSS 4**, et **Prisma 6**.
+Ce projet est une refonte complète et certifiée d'une application e-commerce multi-magasin (initialement en PHP/HTML) vers une architecture moderne utilisant **Next.js 15**, **React 19**, **Tailwind CSS 4**, et **Prisma 6**.
 
 ## 🚀 État du Projet
 
 L'application a été auditée et migrée vers un socle technique robuste. Les fonctionnalités clés implémentées incluent :
-- **Audit & Roadmap** : Analyse complète des failles de sécurité de l'ancien système et plan de migration.
-- **Frontend Moderne** : Interface "Mobile-First" avec navigation responsive, catalogue produit filtrable et tunnel d'achat en 3 étapes.
+- **Audit & Certification** : Analyse approfondie des failles legacy et validation par tests unitaires/intégration.
+- **Frontend Instantané** : Utilisation de Skeletons (`loading.tsx`) et optimisation Next/Image pour une fluidité maximale.
+- **Logique Métier B2C** : Gestion de panier multi-magasins (un panier par magasin) conforme au cahier des charges.
 - **Admin Dashboard** : Gestion des commandes et statistiques de vente.
 - **Paiements Mobiles** : Préparation de l'intégration Airtel Money / Moov Money.
 - **Performance** : Optimisation des composants avec React Server Components et gestion asynchrone des données.

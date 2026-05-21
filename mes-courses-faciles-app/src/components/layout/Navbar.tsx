@@ -17,7 +17,7 @@ export const Navbar = () => {
             <ShoppingCart className="text-white" size={24} />
           </div>
           <span className="text-xl lg:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-secondary to-slate-700 hidden sm:block">
-            MesAchats241
+            Mes Courses Faciles
           </span>
         </Link>
 

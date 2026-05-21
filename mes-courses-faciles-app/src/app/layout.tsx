@@ -10,8 +10,8 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "MesAchats241 | Le meilleur des magasins de Libreville à votre porte",
-  description: "MesAchats241 est une plateforme e-commerce centralisant les magasins alimentaires et de nettoyage de Libreville, Gabon.",
+  title: "Mes Courses Faciles | Le meilleur des magasins de Libreville à votre porte",
+  description: "Mes Courses Faciles est une plateforme e-commerce centralisant les magasins alimentaires et de nettoyage de Libreville, Gabon.",
   manifest: "/manifest.json",
 };
 

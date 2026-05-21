@@ -45,7 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <ShoppingBag size={24} />
             </div>
             {isSidebarOpen && (
-              <span className="font-bold text-xl whitespace-nowrap">MesAchats241</span>
+              <span className="font-bold text-xl whitespace-nowrap">Admin MCF</span>
             )}
             <button className="lg:hidden ml-auto" onClick={() => setIsSidebarOpen(false)}>
               <X />
