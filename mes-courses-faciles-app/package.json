@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "prisma migrate deploy && prisma generate && next build --webpack",
+    "dev": "next dev --turbo",
+    "build": "prisma generate && next build",
     "clean": "node -e \"const fs = require('fs'); fs.rmSync('.next', { recursive: true, force: true }); fs.rmSync('node_modules/.cache', { recursive: true, force: true });\"",
-    "start": "next start --webpack",
+    "start": "next start",
     "lint": "eslint",
     "test": "vitest"
   },

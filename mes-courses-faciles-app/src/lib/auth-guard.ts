@@ -95,3 +95,11 @@ export async function requireAdminAuth(): Promise<AuthSession> {
 export async function getOptionalSession(): Promise<AuthSession | null> {
   return getSessionFromCookie();
 }
+
+/**
+ * Récupère l'utilisateur actuellement connecté depuis le cookie de session de manière non-bloquante (retourne AuthSession ou null).
+ * Pour forcer la connexion en levant une exception, utiliser requireAuth().
+ */
+export async function getCurrentUser(): Promise<AuthSession | null> {
+  return getSessionFromCookie();
+}

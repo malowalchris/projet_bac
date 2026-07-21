@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function NotificationsPage() {
   const dbNotifications = await prisma.notification.findMany({
     orderBy: {
-      createdAt: 'desc'
+      creeLe: 'desc'
     }
   });
 
@@ -16,8 +16,8 @@ export default async function NotificationsPage() {
     type: n.type,
     message: n.message,
     reference: n.reference,
-    isRead: n.isRead,
-    createdAt: n.createdAt.toISOString()
+    isRead: n.estLu,
+    createdAt: n.creeLe.toISOString()
   }));
 
   return <NotificationsClient initialNotifications={initialNotifications} />;

@@ -11,123 +11,158 @@ datasource db {
 }
 
 enum Role {
-  CLIENT
-  ADMIN
+  CLIENT @map("client")
+  ADMIN  @map("admin")
+
+  @@map("role")
 }
 
 enum OrderStatus {
-  PENDING
-  PAID
-  SHIPPED
-  DELIVERED
-  CANCELLED
+  PENDING   @map("en_attente")
+  PAID      @map("payee")
+  SHIPPED   @map("expediee")
+  DELIVERED @map("livree")
+  CANCELLED @map("annulee")
+
+  @@map("statut_commande")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  password  String
-  phone     String?
-  address   String?
-  role      Role     @default(CLIENT)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+model Utilisateur {
+  id         String     @id @default(cuid())
+  nom        String?
+  email      String     @unique
+  motDePasse String     @map("mot_de_passe")
+  telephone  String?
+  adresse    String?
+  role       Role       @default(CLIENT)
+  estActif   Boolean    @default(true) @map("est_actif")
+  creeLe     DateTime   @default(now()) @map("cree_le")
+  misAJourLe DateTime   @updatedAt @map("mis_a_jour_le")
+  commandes      Commande[]
+  articlesPanier ArticlePanier[]
+  articlesFavoris ArticleFavori[]
+
+  @@map("utilisateurs")
 }
 
-model Store {
-  id          String    @id @default(cuid())
-  name        String
-  address     String
-  district    String
-  phone       String
-  logo        String?
-  description String?   @db.Text
-  isActive    Boolean   @default(true)
-  isDeleted   Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
-  orders      Order[]
+model Magasin {
+  id          String     @id @default(cuid())
+  nom         String
+  adresse     String
+  quartier    String
+  telephone   String
+  logo        String?    @db.Text // URL ou JSON stringifié DAM { "url": "https://...", "publicId": "..." }
+  description String?    @db.Text
+  estActif    Boolean    @default(true) @map("est_actif")
+  estSupprime Boolean    @default(false) @map("est_supprime")
+  creeLe      DateTime   @default(now()) @map("cree_le")
+  misAJourLe  DateTime   @updatedAt @map("mis_a_jour_le")
+  produits    Produit[]
+  commandes   Commande[]
+
+  @@map("magasins")
 }
 
-model Product {
-  id          String      @id @default(cuid())
-  name        String
-  description String?     @db.Text
-  price       Float
-  category    String
-  stock       Int         @default(0)
-  unit        String?
-  images      String?     @db.Text // JSON string of image URLs
-  isActive    Boolean     @default(true)
-  isDeleted   Boolean     @default(false)
-  storeId     String
-  store       Store       @relation(fields: [storeId], references: [id])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
+model Produit {
+  id             String           @id @default(cuid())
+  nom            String
+  description    String?          @db.Text
+  prix           Float
+  categorie      String
+  stock          Int              @default(0)
+  unite          String?
+  images         String?          @db.Text // JSON stringifié DAM [{ "url": "https://...", "publicId": "..." }] ou tableau d'URLs
+  estActif       Boolean          @default(true) @map("est_actif")
+  estSupprime    Boolean          @default(false) @map("est_supprime")
+  magasinId      String           @map("magasin_id")
+  magasin        Magasin          @relation(fields: [magasinId], references: [id])
+  creeLe         DateTime         @default(now()) @map("cree_le")
+  misAJourLe     DateTime         @updatedAt @map("mis_a_jour_le")
+  articlesPanier  ArticlePanier[]
+  lignesCommande  LigneCommande[]
+  articlesFavoris ArticleFavori[]
 
-  @@index([storeId])
-  @@index([category])
-  @@index([isDeleted, isActive])
+  @@index([magasinId])
+  @@index([categorie])
+  @@index([estSupprime, estActif])
+  @@map("produits")
 }
 
-model Order {
-  id              String      @id @default(cuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id])
-  storeId         String
-  store           Store       @relation(fields: [storeId], references: [id])
-  total           Float
-  deliveryFee     Float
-  status          OrderStatus @default(PENDING)
-  paymentMethod   String
-  deliveryAddress String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  orderItems      OrderItem[]
+model Commande {
+  id               String          @id @default(cuid())
+  utilisateurId    String          @map("utilisateur_id")
+  utilisateur      Utilisateur     @relation(fields: [utilisateurId], references: [id])
+  magasinId        String          @map("magasin_id")
+  magasin          Magasin         @relation(fields: [magasinId], references: [id])
+  total            Float
+  fraisLivraison   Float           @map("frais_livraison")
+  statut           OrderStatus     @default(PENDING) @map("statut")
+  methodePaiement  String          @map("methode_paiement")
+  adresseLivraison String          @map("adresse_livraison")
+  creeLe           DateTime        @default(now()) @map("cree_le")
+  misAJourLe       DateTime        @updatedAt @map("mis_a_jour_le")
+  lignesCommande   LigneCommande[]
 
-  @@index([userId])
-  @@index([storeId])
-  @@index([status])
+  @@index([utilisateurId])
+  @@index([magasinId])
+  @@index([statut])
+  @@map("commandes")
 }
 
-model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float
+model LigneCommande {
+  id            String   @id @default(cuid())
+  commandeId    String   @map("commande_id")
+  commande      Commande @relation(fields: [commandeId], references: [id])
+  produitId     String   @map("produit_id")
+  produit       Produit  @relation(fields: [produitId], references: [id])
+  quantite      Int
+  prixUnitaire  Float    @map("prix_unitaire")
 
-  @@index([orderId])
-  @@index([productId])
+  @@index([commandeId])
+  @@index([produitId])
+  @@map("lignes_commande")
 }
 
-model CartItem {
-  id        String   @id @default(cuid())
-  userId    String
-  storeId   String
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model ArticlePanier {
+  id            String      @id @default(cuid())
+  utilisateurId String      @map("utilisateur_id")
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  magasinId     String      @map("magasin_id")
+  produitId     String      @map("produit_id")
+  produit       Produit     @relation(fields: [produitId], references: [id])
+  quantite      Int
+  creeLe        DateTime @default(now()) @map("cree_le")
+  misAJourLe    DateTime @updatedAt @map("mis_a_jour_le")
 
-  @@unique([userId, productId])
+  @@unique([utilisateurId, produitId])
+  @@index([utilisateurId])
+  @@index([magasinId])
+  @@index([produitId])
+  @@map("articles_panier")
+}
+
+model ArticleFavori {
+  id            String      @id @default(cuid())
+  utilisateurId String      @map("utilisateur_id")
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  produitId     String      @map("produit_id")
+  produit       Produit     @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  creeLe        DateTime    @default(now()) @map("cree_le")
+
+  @@unique([utilisateurId, produitId])
+  @@index([utilisateurId])
+  @@index([produitId])
+  @@map("articles_favoris")
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  type      String // 'ORDER' | 'STOCK'
-  message   String
-  reference String   @unique // ID unique de l'entité concernée (orderId ou productId)
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  type       String   // 'ORDER' | 'STOCK'
+  message    String
+  reference  String   @unique
+  estLu      Boolean  @default(false) @map("est_lu")
+  creeLe     DateTime @default(now()) @map("cree_le")
+  misAJourLe DateTime @updatedAt @map("mis_a_jour_le")
+
+  @@map("notifications")
 }

@@ -19,26 +19,26 @@ interface UserWithCount extends Omit<UserType, 'createdAt'> {
 }
 
 async function UsersTableLoader() {
-  const dbUsers = await prisma.user.findMany({
-    orderBy: { createdAt: 'desc' },
+  const dbUsers = await prisma.utilisateur.findMany({
+    orderBy: { creeLe: 'desc' },
     include: {
       _count: {
-        select: { orders: true }
+        select: { commandes: true }
       }
     }
   });
 
-  const initialUsers: UserWithCount[] = dbUsers.map(user => ({
+  const initialUsers: UserWithCount[] = dbUsers.map((user: any) => ({
     id: user.id,
-    name: user.name,
+    name: user.nom,
     email: user.email,
-    phone: user.phone,
-    address: user.address,
+    phone: user.telephone,
+    address: user.adresse,
     role: user.role,
-    isActive: user.isActive,
-    createdAt: user.createdAt.toISOString(),
+    isActive: user.estActif,
+    createdAt: user.creeLe.toISOString(),
     _count: {
-      orders: user._count.orders
+      orders: user._count?.commandes || 0
     }
   }));
 

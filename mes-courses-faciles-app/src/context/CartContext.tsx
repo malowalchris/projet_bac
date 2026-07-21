@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { syncCartAction, fetchUserCartAction } from '@/actions/ecommerce';
 import {
@@ -124,7 +124,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cart, user]);
 
-  const addToCart = (product: Omit<CartItem, 'quantity'>) => {
+  const addToCart = useCallback((product: Omit<CartItem, 'quantity'>) => {
     // Handling store conflict before state update to avoid window.confirm in state updater
     const isDifferentStore = cart.length > 0 && product.storeId && cart[0].storeId !== product.storeId;
 
@@ -143,13 +143,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
-  };
+  }, [cart]);
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = useCallback((productId: string) => {
     setCart(prevCart => prevCart.filter(item => item.id !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
@@ -157,9 +157,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart(prevCart =>
       prevCart.map(item => item.id === productId ? { ...item, quantity } : item)
     );
-  };
+  }, [removeFromCart]);
 
-  const clearCart = () => setCart([]);
+  const clearCart = useCallback(() => {
+    setCart([]);
+  }, []);
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);

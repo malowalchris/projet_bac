@@ -24,14 +24,14 @@ export default async function ProfilePage({
     redirect('/?auth=login&callbackUrl=/profile');
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.utilisateur.findUnique({
     where: { id: decoded.id },
     select: {
       id: true,
-      name: true,
+      nom: true,
       email: true,
-      phone: true,
-      address: true,
+      telephone: true,
+      adresse: true,
       role: true,
     }
   });
@@ -51,12 +51,12 @@ export default async function ProfilePage({
 
   // Fetch stats promise from DB (count and total spent)
   const statsPromise = Promise.all([
-    prisma.order.count({
-      where: { userId: user.id }
+    prisma.commande.count({
+      where: { utilisateurId: user.id }
     }),
-    prisma.order.aggregate({
+    prisma.commande.aggregate({
       _sum: { total: true },
-      where: { userId: user.id }
+      where: { utilisateurId: user.id }
     })
   ]).then(([count, sum]) => ({
     count,
@@ -82,10 +82,10 @@ export default async function ProfilePage({
   // Map user to match the props structure expected
   const clientUser = {
     id: user.id,
-    name: user.name,
+    name: user.nom,
     email: user.email,
-    phone: user.phone,
-    address: user.address,
+    phone: user.telephone,
+    address: user.adresse,
     role: user.role,
   };
 

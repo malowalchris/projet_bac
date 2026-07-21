@@ -64,12 +64,12 @@ export function StoreEditSheet({ isOpen, onClose, onSuccess, store }: StoreEditS
   useEffect(() => {
     if (store && isOpen) {
       reset({
-        name: store.name,
-        district: store.district,
-        address: store.address,
-        phone: store.phone,
+        name: store.nom || store.name || '',
+        district: store.quartier || store.district || '',
+        address: store.adresse || store.address || '',
+        phone: store.telephone || store.phone || '',
         description: store.description || '',
-      });
+      } as any);
       setLogoUrl(store.logo || '');
       setSubmitError('');
       setUploading(false);
@@ -140,7 +140,11 @@ export function StoreEditSheet({ isOpen, onClose, onSuccess, store }: StoreEditS
 
     try {
       const result = await updateStoreAction(store.id, {
-        ...data,
+        nom: data.name,
+        adresse: data.address,
+        quartier: data.district,
+        telephone: data.phone,
+        description: data.description,
         logo: logoUrl || undefined,
       } as any);
 

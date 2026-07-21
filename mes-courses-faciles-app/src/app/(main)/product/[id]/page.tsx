@@ -11,24 +11,25 @@ import { ProductCard } from '@/components/blocks/catalog/ProductCard';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
+  const product = await prisma.produit.findUnique({
     where: { id },
     select: { 
-      name: true, 
+      nom: true, 
       description: true,
-      isActive: true,
-      isDeleted: true,
-      store: {
+      estActif: true,
+      estSupprime: true,
+      magasin: {
         select: {
-          isActive: true,
-          isDeleted: true
+          estActif: true,
+          estSupprime: true,
+          nom: true
         }
       }
     }
   });
-  const isAvailable = product && product.isActive && !product.isDeleted && product.store && product.store.isActive && !product.store.isDeleted;
+  const isAvailable = product && product.estActif && !product.estSupprime && product.magasin && product.magasin.estActif && !product.magasin.estSupprime;
   return {
-    title: isAvailable ? `${product.name} | Mes Courses Faciles` : 'Produit | Mes Courses Faciles',
+    title: isAvailable ? `${product.nom} | Mes Courses Faciles` : 'Produit | Mes Courses Faciles',
     description: product?.description || 'Achetez vos produits en ligne à Libreville.',
   };
 }
@@ -36,29 +37,29 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const product = await prisma.product.findUnique({
+  const product = await prisma.produit.findUnique({
     where: { id },
     include: {
-      store: true
+      magasin: true
     }
   });
 
-  if (!product || !product.isActive || product.isDeleted || !product.store || !product.store.isActive || product.store.isDeleted) {
+  if (!product || !product.estActif || product.estSupprime || !product.magasin || !product.magasin.estActif || product.magasin.estSupprime) {
     notFound();
   }
 
   // Get up to 4 other active products from the same store
-  const recommendedProducts = await prisma.product.findMany({
+  const recommendedProducts = await prisma.produit.findMany({
     where: {
-      storeId: product.storeId,
+      magasinId: product.magasinId,
       id: { not: product.id },
-      isActive: true,
-      isDeleted: false,
+      estActif: true,
+      estSupprime: false,
     },
     take: 4,
   });
 
-  const formattedRecommended = recommendedProducts.map((p) => {
+  const formattedRecommended = recommendedProducts.map((p: any) => {
     let img = '';
     try {
       const parsed = JSON.parse(p.images || '[]');
@@ -68,12 +69,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }
     return {
       id: p.id,
-      name: p.name,
-      price: p.price,
+      name: p.nom,
+      price: p.prix,
       image: img,
-      category: p.category,
-      unit: p.unit || 'unité',
-      storeId: p.storeId,
+      category: p.categorie,
+      unit: p.unite || 'unité',
+      storeId: p.magasinId,
     };
   });
 
@@ -83,31 +84,31 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* En-tête standardisé */}
         <div className="mb-8">
           <PageHeader
-            backHref={`/store/${product.storeId}`}
-            backLabel={`Retour à ${product.store?.name || 'la boutique'}`}
+            backHref={`/store/${product.magasinId}`}
+            backLabel={`Retour à ${product.magasin?.nom || 'la boutique'}`}
           />
         </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Product Gallery */}
-            <ProductGallery imagesString={product.images} name={product.name} />
+            <ProductGallery imagesString={product.images} name={product.nom} />
 
             {/* Product Info */}
             <div className="flex flex-col space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="bg-brand-accent text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {product.category}
+                    {product.categorie}
                   </span>
                   <span className="text-slate-400 text-sm font-medium">•</span>
-                  <span className="text-slate-500 text-sm font-bold uppercase">{product.store?.name}</span>
+                  <span className="text-slate-500 text-sm font-bold uppercase">{product.magasin?.nom}</span>
                 </div>
                 <h1 className="text-3xl lg:text-5xl font-extrabold text-slate-800 dark:text-white leading-tight">
-                  {product.name}
+                  {product.nom}
                 </h1>
                 <div className="flex items-center gap-4">
                   <span className="text-4xl font-black text-brand-primary">
-                    {product.price.toLocaleString('fr-FR')} <span className="text-lg">CFA</span>
+                    {product.prix.toLocaleString('fr-FR')} <span className="text-lg">CFA</span>
                   </span>
                 </div>
               </div>
@@ -121,7 +122,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                   <div className="w-1.5 h-1.5 bg-brand-primary rounded-full" />
-                  Unité : {product.unit || 'unité'}
+                  Unité : {product.unite || 'unité'}
                 </div>
                 <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
                   <div className="w-1.5 h-1.5 bg-brand-primary rounded-full" />
@@ -135,12 +136,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <div className="space-y-6">
                 <ProductActions
                   id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  category={product.category}
-                  unit={product.unit}
+                  name={product.nom}
+                  price={product.prix}
+                  category={product.categorie}
+                  unit={product.unite}
                   images={product.images}
-                  storeId={product.storeId}
+                  storeId={product.magasinId}
                 />
 
                 <div className="grid grid-cols-3 gap-4 pt-4">
@@ -164,10 +165,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div className="mt-20 pt-12 border-t border-slate-100 dark:border-white/5 space-y-8">
               <div className="space-y-1">
                 <h2 className="text-2xl font-black text-slate-800 dark:text-white">Produits recommandés</h2>
-                <p className="text-slate-500 font-semibold text-sm">Découvrez d&apos;autres articles disponibles dans la boutique {product.store?.name}</p>
+                <p className="text-slate-500 font-semibold text-sm">Découvrez d&apos;autres articles disponibles dans la boutique {product.magasin?.nom}</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {formattedRecommended.map((p) => (
+                {formattedRecommended.map((p: any) => (
                   <ProductCard key={p.id} {...p} />
                 ))}
               </div>

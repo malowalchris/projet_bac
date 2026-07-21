@@ -13,32 +13,43 @@ export const metadata: Metadata = {
 
 async function StoresLoader() {
   // Query all active and non-deleted stores
-  const stores = await prisma.store.findMany({
+  const dbStores = await prisma.magasin.findMany({
     where: {
-      isActive: true,
-      isDeleted: false,
+      estActif: true,
+      estSupprime: false,
     },
     include: {
-      products: {
+      produits: {
         where: {
-          isActive: true,
-          isDeleted: false,
+          estActif: true,
+          estSupprime: false,
         },
         select: {
-          category: true,
+          categorie: true,
         },
       },
     },
     orderBy: {
-      name: 'asc',
+      nom: 'asc',
     },
   });
 
+  const stores = dbStores.map(s => ({
+    ...s,
+    name: s.nom,
+    address: s.adresse,
+    district: s.quartier,
+    phone: s.telephone,
+    isActive: s.estActif,
+    products: (s.produits || []).map((p: any) => ({ ...p, category: p.categorie })),
+  } as any));
+
   // Extract unique list of districts for filtering
   const districtsSet = new Set<string>();
-  stores.forEach(s => {
-    if (s.district) {
-      districtsSet.add(s.district.trim());
+  stores.forEach((s: any) => {
+    const d = s.quartier || s.district;
+    if (d) {
+      districtsSet.add(d.trim());
     }
   });
   const districts = Array.from(districtsSet).sort((a, b) => a.localeCompare(b, 'fr'));

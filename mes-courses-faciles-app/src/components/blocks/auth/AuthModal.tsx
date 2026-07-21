@@ -6,6 +6,7 @@ import { Mail, Lock, User, Phone, Eye, EyeOff, X, CheckCircle2, ShoppingBag, Shi
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { loginAction, registerAction } from '@/actions/auth';
+import { syncCartAction } from '@/actions/ecommerce';
 import { useAuth } from '@/context/AuthContext';
 
 export function AuthModal() {
@@ -70,34 +71,82 @@ export function AuthModal() {
         const res = await loginAction({ email, password });
         if (!res.success || !res.user) throw new Error(res.error || 'Erreur lors de la connexion');
         
+        // Fusion du panier visiteur (localStorage) avec le serveur avant de réhydrater le store client
+        try {
+          const savedCart = localStorage.getItem('mcf_cart');
+          if (savedCart) {
+            const localItems = JSON.parse(savedCart);
+            if (Array.isArray(localItems) && localItems.length > 0) {
+              await syncCartAction(localItems);
+            }
+          }
+        } catch (e) {
+          console.error('Erreur lors de la synchronisation du panier post-connexion:', e);
+        }
+
         login({
           id: res.user.id,
           email: res.user.email,
           name: res.user.name || 'Utilisateur',
           role: res.user.role
         });
+        router.refresh(); // <-- Avertir les Server Components du nouveau cookie
 
-        // Redirect based on role or callback URL
+        // 1. Priorité absolue au Callback : si callbackUrl présent, y aller directement
         const callbackUrl = searchParams.get('callbackUrl');
-        if (res.user.role === 'ADMIN') {
-          router.push('/admin');
-        } else if (callbackUrl) {
+        if (callbackUrl) {
           router.push(callbackUrl);
+        } else if (res.user.role === 'ADMIN') {
+          router.push('/admin');
+        } else if (pathname === '/auth/login' || pathname.includes('/auth/')) {
+          router.push('/'); // Fallback par défaut si connexion spontanée depuis page auth
         } else {
-          handleClose();
+          router.push(pathname); // Force le retrait du paramètre ?auth=login tout en restant sur la page
         }
       } else {
-        const res = await registerAction({ name, email, password, phone });
+        const res = await registerAction({
+          nom: name,
+          name,
+          email,
+          motDePasse: password,
+          password,
+          telephone: phone,
+          phone
+        });
         if (!res.success || !res.user) throw new Error(res.error || "Erreur lors de l'inscription");
+
+        // Fusion du panier visiteur (localStorage) avec le serveur après inscription
+        try {
+          const savedCart = localStorage.getItem('mcf_cart');
+          if (savedCart) {
+            const localItems = JSON.parse(savedCart);
+            if (Array.isArray(localItems) && localItems.length > 0) {
+              await syncCartAction(localItems);
+            }
+          }
+        } catch (e) {
+          console.error("Erreur lors de la synchronisation du panier post-inscription:", e);
+        }
 
         login({
           id: res.user.id,
           email: res.user.email,
-          name: res.user.name || 'Utilisateur',
+          name: res.user.nom || res.user.name || 'Utilisateur',
           role: res.user.role
         });
-        
-        handleClose();
+        router.refresh(); // <-- Avertir les Server Components du nouveau cookie
+
+        // 1. Priorité absolue au Callback : si callbackUrl présent, y aller directement
+        const callbackUrl = searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else if (res.user.role === 'ADMIN') {
+          router.push('/admin');
+        } else if (pathname === '/auth/login' || pathname.includes('/auth/')) {
+          router.push('/');
+        } else {
+          router.push(pathname); // Force le retrait du paramètre ?auth=register tout en restant sur la page
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');

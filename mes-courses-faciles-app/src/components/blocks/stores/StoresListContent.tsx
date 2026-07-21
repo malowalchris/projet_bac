@@ -330,7 +330,7 @@ export function StoresListContent({ initialStores, districts }: StoresListConten
             {paginatedStores.length > 0 ? (
               <div className="space-y-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {paginatedStores.map((store) => (
+                  {paginatedStores.map((store, index) => (
                     <div key={store.id} className="h-[280px]">
                       <StoreCard
                         id={store.id}
@@ -341,6 +341,7 @@ export function StoresListContent({ initialStores, districts }: StoresListConten
                         deliveryTime={store.deliveryTime}
                         categories={store.categories}
                         isFeatured={false}
+                        priority={index === 0}
                       />
                     </div>
                   ))}

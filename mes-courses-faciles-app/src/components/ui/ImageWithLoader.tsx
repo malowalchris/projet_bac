@@ -58,8 +58,9 @@ export const ImageWithLoader = ({
   const [isLoaded,   setIsLoaded]     = useState(false);
   const [hasFatalError, setFatalError] = useState(false);
 
-  // L'image est "locale" si elle pointe vers /public (SVG)
-  const unoptimized = isLocalPath(displaySrc);
+  // L'image est "locale" si elle pointe vers /public (SVG) ou si on est en fallback sur un placeholder
+  const isLocalSvg = displaySrc.toLowerCase().includes('.svg');
+  const unoptimized = isLocalPath(displaySrc) || isLocalSvg || displaySrc === placeholder;
 
   // ── Gestionnaire d'erreur : 2 niveaux ───────────────────────
   // Niveau 1 : image distante échoue → on bascule sur le placeholder local
@@ -77,8 +78,7 @@ export const ImageWithLoader = ({
   };
 
   const FallbackIcon = FALLBACK_ICONS[type];
-
-  const isLocalSvg = displaySrc.toLowerCase().includes('.svg');
+  const safeAlt = alt || "Image illustrative";
 
   return (
     <div className={`relative h-full w-full overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-800 ${className}`}>
@@ -92,13 +92,13 @@ export const ImageWithLoader = ({
         <div className="flex flex-col items-center justify-center text-slate-400 gap-1 select-none p-2 text-center w-full h-full">
           <FallbackIcon size={24} className="opacity-60" />
           <span className="text-[10px] font-bold uppercase tracking-wider line-clamp-1">
-            {alt.substring(0, 20)}
+            {safeAlt.substring(0, 20)}
           </span>
         </div>
       ) : isLocalSvg ? (
         <Image
           src={displaySrc}
-          alt={alt}
+          alt={safeAlt}
           width={200}
           height={200}
           priority={priority}
@@ -112,7 +112,7 @@ export const ImageWithLoader = ({
       ) : (
         <Image
           src={displaySrc}
-          alt={alt}
+          alt={safeAlt}
           fill
           priority={priority}
           sizes={sizes}

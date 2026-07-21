@@ -10,14 +10,11 @@ import { useCart } from '@/context/CartContext';
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId') || '';
-  const shouldClearCart = searchParams.get('clearCart') === 'true';
   const { clearCart } = useCart();
 
   useEffect(() => {
-    if (shouldClearCart) {
-      clearCart();
-    }
-  }, [shouldClearCart, clearCart]);
+    clearCart();
+  }, [clearCart]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[75vh] py-12 px-4 animate-in fade-in slide-in-from-bottom-8 duration-700">

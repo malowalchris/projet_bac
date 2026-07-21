@@ -52,7 +52,7 @@ export default function AdminStoresClient({ initialStores }: AdminStoresClientPr
         case 'delete':
           return state.filter(s => s.id !== action.id);
         case 'toggle':
-          return state.map(s => s.id === action.id ? { ...s, isActive: action.isActive } : s);
+          return state.map(s => s.id === action.id ? { ...s, estActif: action.isActive, isActive: action.isActive } : s);
         default:
           return state;
       }
@@ -100,7 +100,7 @@ export default function AdminStoresClient({ initialStores }: AdminStoresClientPr
       try {
         const res = await deleteStoreAction(store.id);
         if (res.success) {
-          toast.success(`Le magasin ${store.name} a été supprimé.`);
+          toast.success(`Le magasin ${store.nom || store.name} a été supprimé.`);
           router.refresh();
         } else {
           toast.error(res.error || "Erreur lors de la suppression.");
@@ -129,12 +129,12 @@ export default function AdminStoresClient({ initialStores }: AdminStoresClientPr
             <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 overflow-hidden flex-shrink-0">
               {store.logo ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={store.logo} alt={store.name} className="w-full h-full object-cover" />
+                <img src={store.logo} alt={store.nom || store.name || ''} className="w-full h-full object-cover" />
               ) : (
                 <StoreIcon size={20} />
               )}
             </div>
-            <span className="font-bold text-slate-800 dark:text-slate-200">{store.name}</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">{store.nom || store.name}</span>
           </div>
         );
       }
@@ -143,14 +143,14 @@ export default function AdminStoresClient({ initialStores }: AdminStoresClientPr
       accessorKey: 'district',
       header: 'Quartier',
       cell: ({ row }) => (
-        <span className="text-slate-650 dark:text-slate-400 font-bold">{row.original.district}</span>
+        <span className="text-slate-650 dark:text-slate-400 font-bold">{row.original.quartier || row.original.district}</span>
       )
     },
     {
       accessorKey: 'phone',
       header: 'Téléphone',
       cell: ({ row }) => (
-        <span className="text-slate-500 dark:text-slate-400 font-mono text-xs font-bold">{row.original.phone}</span>
+        <span className="text-slate-500 dark:text-slate-400 font-mono text-xs font-bold">{row.original.telephone || row.original.phone}</span>
       )
     },
     {
@@ -160,12 +160,12 @@ export default function AdminStoresClient({ initialStores }: AdminStoresClientPr
         const store = row.original;
         return (
           <button 
-            onClick={() => toggleStatus(store.id, store.isActive, store.name)} 
+            onClick={() => toggleStatus(store.id, store.estActif ?? store.isActive ?? true, store.nom || store.name || '')} 
             disabled={isPending}
             className="focus:outline-none cursor-pointer disabled:opacity-60"
             title="Cliquez pour changer le statut"
           >
-            {store.isActive ? (
+            {(store.estActif ?? store.isActive) ? (
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-250/30">
                 <CheckCircle size={12} /> Actif
               </span>
@@ -236,7 +236,7 @@ export default function AdminStoresClient({ initialStores }: AdminStoresClientPr
               Supprimer le magasin partenaire ?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed">
-              Êtes-vous sûr de vouloir supprimer <strong className="text-slate-700 dark:text-slate-200">{storeToDelete?.name}</strong> ? 
+              Êtes-vous sûr de vouloir supprimer <strong className="text-slate-700 dark:text-slate-200">{storeToDelete?.nom || storeToDelete?.name}</strong> ? 
               Cette action le retirera définitivement de l&apos;interface publique et masquera également tous les produits associés.
             </AlertDialogDescription>
           </AlertDialogHeader>

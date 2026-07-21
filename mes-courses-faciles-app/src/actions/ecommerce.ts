@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { cache } from "react";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { orderSchema, productSchema, storeSchema } from "@/lib/validations/schemas";
 import { z } from "zod";
@@ -8,7 +9,7 @@ import { OrderStatus } from '@prisma/client';
 import { resend, FROM_EMAIL, APP_URL } from '@/lib/mail';
 import { OrderReceiptEmail } from '@/emails/OrderReceiptEmail';
 import { render } from '@react-email/components';
-import { requireAuth, requireAdminAuth, AuthError } from '@/lib/auth-guard';
+import { requireAuth, requireAdminAuth, getCurrentUser, AuthError } from '@/lib/auth-guard';
 import { resolveImageUrl } from '@/lib/image-resolver';
 import { sanitizePrismaArray } from '@/lib/serialization';
 import { Order as OrderType } from '@/types';
@@ -16,9 +17,9 @@ import { Order as OrderType } from '@/types';
 
 export const getCachedActiveStores = unstable_cache(
   async () => {
-    const stores = await prisma.store.findMany({
-      where: { isActive: true, isDeleted: false },
-      orderBy: { createdAt: "desc" }
+    const stores = await prisma.magasin.findMany({
+      where: { estActif: true, estSupprime: false },
+      orderBy: { creeLe: "desc" }
     });
     // sanitize : convertit les objets Date en strings ISO avant le passage RSC boundary
     return sanitizePrismaArray(stores);
@@ -29,25 +30,25 @@ export const getCachedActiveStores = unstable_cache(
   }
 );
 
-export async function createOrderAction(data: z.infer<typeof orderSchema>) {
+export async function createOrderAction(data: any) {
   try {
     // Zero-Trust : userId extrait de la session serveur, jamais du payload client
     const session = await requireAuth();
 
     const validated = orderSchema.parse(data);
-    const order = await prisma.order.create({
+    const order = await prisma.commande.create({
       data: {
-        userId: session.id,           // ← session serveur uniquement
-        storeId: validated.storeId,
+        utilisateurId: session.id,           // ← session serveur uniquement
+        magasinId: validated.magasinId || validated.storeId!,
         total: validated.total,
-        deliveryFee: validated.deliveryFee,
-        paymentMethod: validated.paymentMethod,
-        deliveryAddress: validated.deliveryAddress,
-        orderItems: {
-          create: validated.items.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity,
-            price: item.price,
+        fraisLivraison: validated.deliveryFee || validated.fraisLivraison,
+        methodePaiement: validated.paymentMethod || validated.methodePaiement,
+        adresseLivraison: validated.deliveryAddress || validated.adresseLivraison,
+        lignesCommande: {
+          create: (validated.items || validated.lignes || []).map((item: any) => ({
+            produitId: item.id || item.produitId,
+            quantite: item.quantity || item.quantite,
+            prixUnitaire: item.price || item.prixUnitaire,
           })),
         },
       },
@@ -61,25 +62,25 @@ export async function createOrderAction(data: z.infer<typeof orderSchema>) {
   }
 }
 
-export async function createStoreAction(data: z.infer<typeof storeSchema>) {
+export async function createStoreAction(data: any) {
   try {
     const admin = await requireAdminAuth();
     void admin; // session validée
 
     const validated = storeSchema.parse(data);
-    const store = await prisma.store.create({
+    const store = await prisma.magasin.create({
       data: {
-        name: validated.name,
-        address: validated.address,
-        district: validated.district,
-        phone: validated.phone,
+        nom: validated.nom || (validated as any).name,
+        adresse: validated.adresse || (validated as any).address,
+        quartier: validated.quartier || (validated as any).district,
+        telephone: validated.telephone || (validated as any).phone,
         description: validated.description,
         logo: validated.logo || null,
-        isActive: true,
+        estActif: true,
       },
     });
     revalidatePath("/admin/stores");
-    revalidatePath("/");
+    revalidatePath("/stores");
     revalidateTag("stores", "max");
     return { success: true, id: store.id };
   } catch (e: any) {
@@ -92,12 +93,12 @@ export async function updateStoreStatusAction(storeId: string, isActive: boolean
     const admin = await requireAdminAuth();
     void admin;
 
-    await prisma.store.update({
+    await prisma.magasin.update({
       where: { id: storeId },
-      data: { isActive },
+      data: { estActif: isActive, isActive } as any,
     });
     revalidatePath("/admin/stores");
-    revalidatePath("/");
+    revalidatePath("/stores");
     revalidateTag("stores", "max");
     return { success: true };
   } catch (e: any) {
@@ -115,32 +116,35 @@ interface CartItemInput {
  * Synchronise le panier guest → DB après authentification.
  * Zero-Trust : le userId est TOUJOURS extrait de la session serveur.
  * Le client ne peut pas passer son propre userId en paramètre.
+ * Optimisation : Exécuté au sein d'une transaction unique pour éviter les pertes et latences séquentiels.
  */
 export async function syncCartAction(cartItems: CartItemInput[]) {
   try {
     const session = await requireAuth();
     const userId = session.id;           // ← source de vérité serveur
 
-    // Écraser l'ancien panier lié à CET utilisateur uniquement
-    await prisma.cartItem.deleteMany({
-      where: { userId },
-    });
+    await prisma.$transaction(async (tx) => {
+      // Écraser l'ancien panier lié à CET utilisateur uniquement
+      await tx.articlePanier.deleteMany({
+        where: { utilisateurId: userId },
+      });
 
-    if (cartItems.length > 0) {
-      const storeId = cartItems[0].storeId;
-      if (!storeId) {
-        return { success: false, error: "Identifiant du magasin introuvable" };
+      if (cartItems.length > 0) {
+        const storeId = cartItems[0].storeId || (cartItems[0] as any).magasinId;
+        if (!storeId) {
+          throw new Error("Identifiant du magasin introuvable");
+        }
+
+        const itemsToCreate = cartItems.map(item => ({
+          utilisateurId: userId,           // ← session.id, jamais du client
+          magasinId: storeId,
+          produitId: item.id || (item as any).produitId,
+          quantite: item.quantity || (item as any).quantite,
+        }));
+
+        await tx.articlePanier.createMany({ data: itemsToCreate });
       }
-
-      const itemsToCreate = cartItems.map(item => ({
-        userId,                          // ← session.id, jamais du client
-        storeId,
-        productId: item.id,
-        quantity: item.quantity,
-      }));
-
-      await prisma.cartItem.createMany({ data: itemsToCreate });
-    }
+    });
 
     return { success: true };
   } catch (e: unknown) {
@@ -152,27 +156,48 @@ export async function syncCartAction(cartItems: CartItemInput[]) {
 /**
  * Récupère le panier DB de l'utilisateur connecté.
  * Zero-Trust : userId extrait de la session, jamais du client.
+ * Déduplication : React.cache() évite d'exécuter plusieurs fois la requête SQL lors d'un même cycle de rendu.
  */
-export async function fetchUserCartAction() {
+export const fetchUserCartAction = cache(async () => {
   try {
     const session = await requireAuth();
     const userId = session.id;           // ← source de vérité serveur
 
-    const items = await prisma.cartItem.findMany({
-      where: { userId },                 // ← isolé par session.id
-      include: { product: true },
+    const items = await prisma.articlePanier.findMany({
+      where: { utilisateurId: userId },  // ← isolé par session.id
+      select: {
+        produitId: true,
+        quantite: true,
+        magasinId: true,
+        produit: {
+          select: {
+            nom: true,
+            prix: true,
+            images: true,
+            unite: true,
+            categorie: true,
+          }
+        }
+      }
     });
 
     const formattedCart = items.map(item => ({
-      id:       item.productId,
-      name:     item.product.name,
-      price:    item.product.price,
+      id:       item.produitId,
+      produitId: item.produitId,
+      name:     item.produit.nom,
+      nom:      item.produit.nom,
+      price:    item.produit.prix,
+      prix:     item.produit.prix,
       // resolveImageUrl gère tous les cas : null, '[]', JSON stringifié, chemin local
-      image:    resolveImageUrl(item.product.images, 'product'),
-      quantity: item.quantity,
-      unit:     item.product.unit || '',
-      category: item.product.category,
-      storeId:  item.storeId,
+      image:    resolveImageUrl(item.produit.images, 'product'),
+      quantity: item.quantite,
+      quantite: item.quantite,
+      unit:     item.produit.unite || '',
+      unite:    item.produit.unite || '',
+      category: item.produit.categorie,
+      categorie: item.produit.categorie,
+      storeId:  item.magasinId,
+      magasinId: item.magasinId,
     }));
 
     return { success: true, cart: formattedCart };
@@ -180,23 +205,62 @@ export async function fetchUserCartAction() {
     if (e instanceof AuthError) return { success: false, error: e.message };
     return { success: false, error: (e as Error).message };
   }
+});
+
+/**
+ * Ajoute ou met à jour la quantité d'un article dans le panier DB.
+ * Zero-Trust : L'identifiant utilisateur est extrait EXCLUSIVEMENT de la session vérifiée côté serveur.
+ * Aucun ID utilisateur n'est accepté en paramètre depuis le client.
+ */
+export async function addToCartAction(produitId: string, magasinId: string, quantite: number = 1) {
+  try {
+    const user = await requireAuth();
+    if (!produitId || !magasinId) {
+      return { success: false, error: "Produit et magasin requis" };
+    }
+
+    await prisma.articlePanier.upsert({
+      where: {
+        utilisateurId_produitId: {
+          utilisateurId: user.id, // ← source de vérité serveur, jamais du client
+          produitId
+        }
+      },
+      update: {
+        quantite: { increment: quantite },
+        magasinId
+      },
+      create: {
+        utilisateurId: user.id, // ← isolation stricte
+        produitId,
+        magasinId,
+        quantite
+      }
+    });
+
+    revalidatePath('/cart');
+    return { success: true };
+  } catch (e: unknown) {
+    if (e instanceof AuthError) return { success: false, error: e.message };
+    return { success: false, error: (e as Error).message };
+  }
 }
 
-export async function createProductAction(data: z.infer<typeof productSchema>) {
+export async function createProductAction(data: any) {
   try {
     await requireAdminAuth();
 
     const validated = productSchema.parse(data);
-    const product = await prisma.product.create({
+    const product = await prisma.produit.create({
       data: {
-        name: validated.name,
+        nom: validated.name || (validated as any).nom,
         description: validated.description,
-        price: validated.price,
-        category: validated.category,
-        unit: validated.unit,
+        prix: validated.price || (validated as any).prix,
+        categorie: validated.category || (validated as any).categorie,
+        unite: validated.unit || (validated as any).unite,
         stock: validated.stock,
         images: JSON.stringify(validated.images),
-        storeId: validated.storeId,
+        magasinId: validated.magasinId || validated.storeId!,
       },
     });
     revalidatePath("/admin/products");
@@ -211,9 +275,9 @@ export async function updateOrderStatusAction(orderId: string, status: OrderStat
   try {
     await requireAdminAuth();
 
-    await prisma.order.update({
+    await prisma.commande.update({
       where: { id: orderId },
-      data: { status },
+      data: { statut: status },
     });
     revalidatePath("/admin/orders");
     revalidatePath("/admin");
@@ -224,25 +288,26 @@ export async function updateOrderStatusAction(orderId: string, status: OrderStat
   }
 }
 
-export async function updateStoreAction(storeId: string, data: z.infer<typeof storeSchema>) {
+export async function updateStoreAction(storeId: string, data: any) {
   try {
     await requireAdminAuth();
 
     const validated = storeSchema.parse(data);
-    const updatedStore = await prisma.store.update({
+    const updatedStore = await prisma.magasin.update({
       where: { id: storeId },
       data: {
-        name: validated.name,
-        address: validated.address,
-        district: validated.district,
-        phone: validated.phone,
+        nom: validated.nom || (validated as any).name,
+        adresse: validated.adresse || (validated as any).address,
+        quartier: validated.quartier || (validated as any).district,
+        telephone: validated.telephone || (validated as any).phone,
         description: validated.description || null,
         logo: validated.logo || null,
       },
     });
 
     revalidatePath("/admin/stores");
-    revalidatePath("/");
+    revalidatePath("/stores");
+    revalidatePath(`/store/${storeId}`);
     revalidateTag("stores", "max");
     return { success: true, id: updatedStore.id };
   } catch (e: any) {
@@ -259,25 +324,26 @@ export async function deleteStoreAction(storeId: string) {
 
     // Soft delete store and its products atomically inside a transaction
     await prisma.$transaction([
-      prisma.store.update({
+      prisma.magasin.update({
         where: { id: storeId },
         data: { 
-          isDeleted: true,
-          isActive: false 
+          estSupprime: true,
+          estActif: false 
         },
       }),
-      prisma.product.updateMany({
-        where: { storeId },
+      prisma.produit.updateMany({
+        where: { magasinId: storeId },
         data: { 
-          isDeleted: true,
-          isActive: false 
+          estSupprime: true,
+          estActif: false 
         },
       })
     ]);
 
     revalidatePath("/admin/stores");
     revalidatePath("/admin/products");
-    revalidatePath("/");
+    revalidatePath("/stores");
+    revalidatePath(`/store/${storeId}`);
     revalidateTag("stores", "max");
     return { success: true };
   } catch (e: any) {
@@ -285,22 +351,22 @@ export async function deleteStoreAction(storeId: string) {
   }
 }
 
-export async function updateProductAction(productId: string, data: z.infer<typeof productSchema>) {
+export async function updateProductAction(productId: string, data: any) {
   try {
     await requireAdminAuth();
 
     const validated = productSchema.parse(data);
-    const updatedProduct = await prisma.product.update({
+    const updatedProduct = await prisma.produit.update({
       where: { id: productId },
       data: {
-        name: validated.name,
+        nom: validated.name || (validated as any).nom,
         description: validated.description || null,
-        price: validated.price,
-        category: validated.category,
-        unit: validated.unit,
+        prix: validated.price || (validated as any).prix,
+        categorie: validated.category || (validated as any).categorie,
+        unite: validated.unit || (validated as any).unite,
         stock: validated.stock,
         images: JSON.stringify(validated.images),
-        storeId: validated.storeId,
+        magasinId: validated.magasinId || validated.storeId!,
       },
     });
 
@@ -320,16 +386,16 @@ export async function deleteProductAction(productId: string) {
   try {
     await requireAdminAuth();
 
-    const product = await prisma.product.update({
+    const product = await prisma.produit.update({
       where: { id: productId },
       data: { 
-        isDeleted: true,
-        isActive: false 
+        estSupprime: true,
+        estActif: false 
       },
     });
 
     revalidatePath("/admin/products");
-    revalidatePath(`/store/${product.storeId}`);
+    revalidatePath(`/store/${product.magasinId}`);
     return { success: true };
   } catch (e: any) {
     return { success: false, error: e.message };
@@ -352,11 +418,11 @@ export async function processCheckoutAction(
 
     // Zero Trust: load products from database to get actual prices and store ID
     const productIds = cartItems.map(item => item.id);
-    const dbProducts = await prisma.product.findMany({
+    const dbProducts = await prisma.produit.findMany({
       where: {
         id: { in: productIds },
-        isDeleted: false,
-        isActive: true,
+        estSupprime: false,
+        estActif: true,
       },
     });
 
@@ -368,8 +434,8 @@ export async function processCheckoutAction(
     const productMap = new Map(dbProducts.map(p => [p.id, p]));
     
     let itemsTotal = 0;
-    const itemsData: { productId: string; quantity: number; price: number }[] = [];
-    const storeId = dbProducts[0].storeId;
+    const itemsData: { produitId: string; quantite: number; prixUnitaire: number }[] = [];
+    const storeId = dbProducts[0].magasinId;
 
     for (const item of cartItems) {
       const dbProduct = productMap.get(item.id);
@@ -377,11 +443,11 @@ export async function processCheckoutAction(
         return { success: false, error: `Le produit avec l'ID ${item.id} n'existe pas ou est indisponible.` };
       }
       
-      itemsTotal += dbProduct.price * item.quantity;
+      itemsTotal += dbProduct.prix * item.quantity;
       itemsData.push({
-        productId: dbProduct.id,
-        quantity: item.quantity,
-        price: dbProduct.price, // Use DB price (Zero Trust)
+        produitId: dbProduct.id,
+        quantite: item.quantity,
+        prixUnitaire: dbProduct.prix, // Use DB price (Zero Trust)
       });
     }
 
@@ -397,16 +463,16 @@ export async function processCheckoutAction(
     }
 
     // Create the order in DB, bound to the authenticated user ID (Anti-BOLA)
-    const order = await prisma.order.create({
+    const order = await prisma.commande.create({
       data: {
-        userId: userId,          // ← session.id (Zero-Trust, jamais du client)
-        storeId: storeId,
+        utilisateurId: userId,          // ← session.id (Zero-Trust, jamais du client)
+        magasinId: storeId,
         total: finalTotal,
-        deliveryFee: deliveryFee,
-        paymentMethod: paymentMethod,
-        deliveryAddress: deliveryAddress,
-        status: "PENDING",
-        orderItems: {
+        fraisLivraison: deliveryFee,
+        methodePaiement: paymentMethod,
+        adresseLivraison: deliveryAddress,
+        statut: "PENDING",
+        lignesCommande: {
           create: itemsData,
         },
       },
@@ -424,13 +490,13 @@ export async function processCheckoutAction(
       try {
         // Récupère l'email du client et les détails du magasin en parallèle
         const [dbUser, store] = await Promise.all([
-          prisma.user.findUnique({
+          prisma.utilisateur.findUnique({
             where: { id: userId },   // ← session.id
-            select: { email: true, name: true },
+            select: { email: true, nom: true },
           }),
-          prisma.store.findUnique({
+          prisma.magasin.findUnique({
             where: { id: storeId },
-            select: { name: true },
+            select: { nom: true },
           })
         ]);
 
@@ -438,20 +504,20 @@ export async function processCheckoutAction(
 
         // Récupère les noms des produits pour le template
         const orderItemsWithNames = itemsData.map((item) => {
-          const product = productMap.get(item.productId);
+          const product = productMap.get(item.produitId);
           return {
-            name:      product?.name ?? 'Article',
-            quantity:  item.quantity,
-            unitPrice: item.price,
+            name:      product?.nom ?? 'Article',
+            quantity:  item.quantite,
+            unitPrice: item.prixUnitaire,
           };
         });
 
         const emailHtml = await render(
           OrderReceiptEmail({
-            customerName:    dbUser.name ?? 'Client',
+            customerName:    dbUser.nom ?? 'Client',
             customerEmail:   dbUser.email,
             orderCode,
-            storeName:       store?.name ?? 'Magasin Partenaire',
+            storeName:       store?.nom ?? 'Magasin Partenaire',
             items:           orderItemsWithNames,
             subtotal:        itemsTotal,
             deliveryFee,
@@ -503,22 +569,60 @@ export async function fetchUserOrdersAction(page: number = 1, limit: number = 10
     const userId = session.id;
 
     const [orders, totalCount] = await prisma.$transaction([
-      prisma.order.findMany({
-        where: { userId },
-        include: {
-          orderItems: {
-            include: {
-              product: true,
+      prisma.commande.findMany({
+        where: { utilisateurId: userId },
+        select: {
+          id: true,
+          utilisateurId: true,
+          magasinId: true,
+          total: true,
+          fraisLivraison: true,
+          statut: true,
+          methodePaiement: true,
+          adresseLivraison: true,
+          creeLe: true,
+          magasin: {
+            select: {
+              id: true,
+              nom: true,
+              adresse: true,
+              quartier: true,
+              telephone: true,
+              logo: true,
+              description: true,
+              estActif: true,
             }
           },
-          store: true,
+          lignesCommande: {
+            select: {
+              id: true,
+              commandeId: true,
+              produitId: true,
+              quantite: true,
+              prixUnitaire: true,
+              produit: {
+                select: {
+                  id: true,
+                  nom: true,
+                  description: true,
+                  prix: true,
+                  categorie: true,
+                  stock: true,
+                  unite: true,
+                  images: true,
+                  estActif: true,
+                  magasinId: true,
+                }
+              }
+            }
+          }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { creeLe: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.order.count({
-        where: { userId }
+      prisma.commande.count({
+        where: { utilisateurId: userId }
       })
     ]);
 
@@ -526,42 +630,64 @@ export async function fetchUserOrdersAction(page: number = 1, limit: number = 10
     
     const formattedOrders: OrderType[] = orders.map(order => ({
       id: order.id,
-      userId: order.userId,
-      storeId: order.storeId,
+      userId: order.utilisateurId,
+      magasinId: order.magasinId,
+      storeId: order.magasinId,
       total: order.total,
-      deliveryFee: order.deliveryFee,
-      status: order.status as OrderType['status'],
-      paymentMethod: order.paymentMethod,
-      deliveryAddress: order.deliveryAddress,
-      createdAt: order.createdAt,
-      store: order.store ? {
-        id: order.store.id,
-        name: order.store.name,
-        address: order.store.address,
-        district: order.store.district,
-        phone: order.store.phone,
-        logo: order.store.logo,
-        description: order.store.description,
-        isActive: order.store.isActive,
+      deliveryFee: order.fraisLivraison,
+      status: order.statut as OrderType['status'],
+      paymentMethod: order.methodePaiement,
+      deliveryAddress: order.adresseLivraison,
+      createdAt: order.creeLe,
+      magasin: order.magasin ? {
+        id: order.magasin.id,
+        nom: order.magasin.nom,
+        adresse: order.magasin.adresse,
+        quartier: order.magasin.quartier,
+        telephone: order.magasin.telephone,
+        logo: order.magasin.logo,
+        description: order.magasin.description,
+        estActif: order.magasin.estActif,
       } : undefined,
-      orderItems: order.orderItems.map(item => ({
+      store: order.magasin ? {
+        id: order.magasin.id,
+        name: order.magasin.nom,
+        address: order.magasin.adresse,
+        district: order.magasin.quartier,
+        phone: order.magasin.telephone,
+        logo: order.magasin.logo,
+        description: order.magasin.description,
+        isActive: order.magasin.estActif,
+        nom: order.magasin.nom,
+        adresse: order.magasin.adresse,
+        quartier: order.magasin.quartier,
+        telephone: order.magasin.telephone,
+        estActif: order.magasin.estActif,
+      } as any : undefined,
+      orderItems: order.lignesCommande.map(item => ({
         id: item.id,
-        orderId: item.orderId,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        product: item.product ? {
-          id: item.product.id,
-          name: item.product.name,
-          description: item.product.description,
-          price: item.product.price,
-          category: item.product.category,
-          stock: item.product.stock,
-          unit: item.product.unit,
-          images: item.product.images,
-          isActive: item.product.isActive,
-          storeId: item.product.storeId,
-        } : undefined
+        orderId: item.commandeId,
+        productId: item.produitId,
+        quantity: item.quantite,
+        price: item.prixUnitaire,
+        product: item.produit ? {
+          id: item.produit.id,
+          name: item.produit.nom,
+          nom: item.produit.nom,
+          description: item.produit.description,
+          price: item.produit.prix,
+          prix: item.produit.prix,
+          category: item.produit.categorie,
+          categorie: item.produit.categorie,
+          stock: item.produit.stock,
+          unit: item.produit.unite || '',
+          unite: item.produit.unite || '',
+          images: item.produit.images,
+          isActive: item.produit.estActif,
+          estActif: item.produit.estActif,
+          magasinId: item.produit.magasinId,
+          storeId: item.produit.magasinId,
+        } as any : undefined
       }))
     }));
 
@@ -571,6 +697,146 @@ export async function fetchUserOrdersAction(page: number = 1, limit: number = 10
       totalPages,
       currentPage: page
     };
+  } catch (e: unknown) {
+    if (e instanceof AuthError) return { success: false, error: e.message };
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+/**
+ * Récupère le détail d'une commande par son identifiant unique.
+ * Anti-IDOR Vecteur n°1 : Double vérification obligatoire `where: { id: orderId, utilisateurId: session.id }`.
+ * Si la commande existe mais appartient à un autre utilisateur, la requête retourne `null` et une erreur générique 404/403 est renvoyée pour ne pas divulguer l'existence de la ressource.
+ */
+export async function fetchOrderDetailsAction(orderId: string) {
+  try {
+    const session = await requireAuth();
+    if (!orderId) {
+      return { success: false, error: "Identifiant de commande requis." };
+    }
+
+    const order = await prisma.commande.findUnique({
+      where: {
+        id: orderId,
+        utilisateurId: session.id // ← Double vérification stricte anti-IDOR
+      },
+      select: {
+        id: true,
+        utilisateurId: true,
+        magasinId: true,
+        total: true,
+        fraisLivraison: true,
+        statut: true,
+        methodePaiement: true,
+        adresseLivraison: true,
+        creeLe: true,
+        magasin: {
+          select: {
+            id: true,
+            nom: true,
+            adresse: true,
+            quartier: true,
+            telephone: true,
+            logo: true,
+            description: true,
+            estActif: true,
+          }
+        },
+        lignesCommande: {
+          select: {
+            id: true,
+            commandeId: true,
+            produitId: true,
+            quantite: true,
+            prixUnitaire: true,
+            produit: {
+              select: {
+                id: true,
+                nom: true,
+                description: true,
+                prix: true,
+                categorie: true,
+                stock: true,
+                unite: true,
+                images: true,
+                estActif: true,
+                magasinId: true,
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!order) {
+      // Retour générique type 404/403 pour masquer l'existence potentielle d'une commande tierce
+      return { success: false, error: "Commande introuvable ou accès non autorisé (404/403)." };
+    }
+
+    const formattedOrder: OrderType = {
+      id: order.id,
+      userId: order.utilisateurId,
+      magasinId: order.magasinId,
+      storeId: order.magasinId,
+      total: order.total,
+      deliveryFee: order.fraisLivraison,
+      status: order.statut as OrderType['status'],
+      paymentMethod: order.methodePaiement,
+      deliveryAddress: order.adresseLivraison,
+      createdAt: order.creeLe,
+      magasin: order.magasin ? {
+        id: order.magasin.id,
+        nom: order.magasin.nom,
+        adresse: order.magasin.adresse,
+        quartier: order.magasin.quartier,
+        telephone: order.magasin.telephone,
+        logo: order.magasin.logo,
+        description: order.magasin.description,
+        estActif: order.magasin.estActif,
+      } : undefined,
+      store: order.magasin ? {
+        id: order.magasin.id,
+        name: order.magasin.nom,
+        address: order.magasin.adresse,
+        district: order.magasin.quartier,
+        phone: order.magasin.telephone,
+        logo: order.magasin.logo,
+        description: order.magasin.description,
+        isActive: order.magasin.estActif,
+        nom: order.magasin.nom,
+        adresse: order.magasin.adresse,
+        quartier: order.magasin.quartier,
+        telephone: order.magasin.telephone,
+        estActif: order.magasin.estActif,
+      } as any : undefined,
+      orderItems: order.lignesCommande.map(item => ({
+        id: item.id,
+        orderId: item.commandeId,
+        productId: item.produitId,
+        quantity: item.quantite,
+        price: item.prixUnitaire,
+        product: item.produit ? {
+          id: item.produit.id,
+          name: item.produit.nom,
+          nom: item.produit.nom,
+          description: item.produit.description,
+          price: item.produit.prix,
+          prix: item.produit.prix,
+          category: item.produit.categorie,
+          categorie: item.produit.categorie,
+          stock: item.produit.stock,
+          unit: item.produit.unite || '',
+          unite: item.produit.unite || '',
+          images: item.produit.images,
+          isActive: item.produit.estActif,
+          estActif: item.produit.estActif,
+          magasinId: item.produit.magasinId,
+          storeId: item.produit.magasinId,
+        } as any : undefined
+      }))
+    };
+
+    return { success: true, order: formattedOrder };
   } catch (e: unknown) {
     if (e instanceof AuthError) return { success: false, error: e.message };
     return { success: false, error: (e as Error).message };

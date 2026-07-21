@@ -25,20 +25,20 @@ interface ActiveOrderTrackerProps {
  */
 export async function ActiveOrderTracker({ userId, userName }: ActiveOrderTrackerProps) {
   // Récupère la commande en cours la plus récente
-  let activeOrder: Awaited<ReturnType<typeof prisma.order.findFirst<{
-    include: { store: { select: { name: true } }; orderItems: { select: { quantity: true } } };
+  let activeOrder: Awaited<ReturnType<typeof prisma.commande.findFirst<{
+    include: { magasin: { select: { nom: true } }; lignesCommande: { select: { quantite: true } } };
   }>>> | null = null;
   try {
-    activeOrder = await prisma.order.findFirst({
+    activeOrder = await prisma.commande.findFirst({
       where: {
-        userId,
-        status: { in: ACTIVE_STATUSES },
+        utilisateurId: userId,
+        statut: { in: ACTIVE_STATUSES },
       },
       include: {
-        store: { select: { name: true } },
-        orderItems: { select: { quantity: true } },
+        magasin: { select: { nom: true } },
+        lignesCommande: { select: { quantite: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { creeLe: 'desc' },
     });
   } catch (error) {
     console.error('ActiveOrderTracker: fetch error (silent)', error);
@@ -53,7 +53,7 @@ export async function ActiveOrderTracker({ userId, userName }: ActiveOrderTracke
   ];
 
   const currentStepIndex = activeOrder
-    ? STEPS.findIndex((s) => s.key === activeOrder!.status)
+    ? STEPS.findIndex((s) => s.key === activeOrder!.statut)
     : -1;
 
   const firstName = userName.split(' ')[0];
@@ -110,7 +110,7 @@ export async function ActiveOrderTracker({ userId, userName }: ActiveOrderTracke
   }
 
   // ─── ACTIVE ORDER STATE ──────────────────────────────────────────────────────
-  const totalItems = activeOrder.orderItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = activeOrder.lignesCommande.reduce((sum, item) => sum + item.quantite, 0);
   const orderId = activeOrder.id.slice(-6).toUpperCase();
 
   return (
@@ -139,7 +139,7 @@ export async function ActiveOrderTracker({ userId, userName }: ActiveOrderTracke
                 #{orderId}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                {activeOrder.store?.name} · {totalItems} article{totalItems > 1 ? 's' : ''}
+                {(activeOrder as any).magasin?.nom || (activeOrder as any).store?.name} · {totalItems} article{totalItems > 1 ? 's' : ''}
               </p>
             </div>
           </div>

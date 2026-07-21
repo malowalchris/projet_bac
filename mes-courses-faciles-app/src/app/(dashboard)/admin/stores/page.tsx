@@ -11,24 +11,30 @@ import Loading from './loading';
 export const dynamic = 'force-dynamic';
 
 async function StoresTableLoader() {
-  const dbStores = await prisma.store.findMany({
-    where: { isDeleted: false },
+  const dbStores = await prisma.magasin.findMany({
+    where: { estSupprime: false },
     orderBy: {
-      createdAt: 'desc'
+      creeLe: 'desc'
     }
   });
 
   // Map and serialize Prisma objects into serializable StoreType instances
   const initialStores: StoreType[] = dbStores.map(store => ({
     id: store.id,
-    name: store.name,
-    address: store.address,
-    district: store.district,
-    phone: store.phone,
+    nom: store.nom,
+    adresse: store.adresse,
+    quartier: store.quartier,
+    telephone: store.telephone,
     logo: store.logo,
     description: store.description,
-    isActive: store.isActive
-  }));
+    estActif: store.estActif,
+    // Alias EN pour rétrocompatibilité composants clients
+    name: store.nom,
+    address: store.adresse,
+    district: store.quartier,
+    phone: store.telephone,
+    isActive: store.estActif
+  } as any));
 
   return <AdminStoresClient initialStores={initialStores} />;
 }

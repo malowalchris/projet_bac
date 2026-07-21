@@ -9,12 +9,10 @@ import Link from 'next/link';
 import { StoreSkeleton, ProductSkeleton } from '@/components/common/Skeletons';
 import { Footer } from '@/components/layout/Footer';
 import { HeroContent } from '@/components/blocks/home/HeroContent';
-import { cookies } from 'next/headers';
-import { verifyJWT } from '@/lib/jwt';
+import { getOptionalSession } from '@/lib/auth-guard';
 import { ProductCard } from '@/components/blocks/catalog/ProductCard';
 import { PromoCarousel } from '@/components/blocks/home/PromoCarousel';
 import { ActiveOrderTracker } from '@/components/blocks/home/ActiveOrderTracker';
-import { SessionUser } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +52,7 @@ async function BentoStoreList() {
                   deliveryTime="30-45 min"
                   categories={['Alimentation', 'Hygiène']}
                   isFeatured={isFeatured}
+                  priority={index === 0}
                 />
              </div>
          );
@@ -82,7 +81,7 @@ async function RecommendedStores() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      {stores.map(store => (
+      {stores.map((store, index) => (
         <div key={store.id} className="h-[280px]">
           <StoreCard
             id={store.id}
@@ -93,6 +92,7 @@ async function RecommendedStores() {
             deliveryTime="30-45 min"
             categories={['Alimentation', 'Hygiène']}
             isFeatured={false}
+            priority={index === 0}
           />
         </div>
       ))}
@@ -103,8 +103,8 @@ async function RecommendedStores() {
 async function SuggestedProducts() {
   let products: any[] = [];
   try {
-    products = await prisma.product.findMany({
-      where: { isActive: true },
+    products = await prisma.produit.findMany({
+      where: { estActif: true, estSupprime: false },
       take: 8,
     });
   } catch (error) {
@@ -122,7 +122,7 @@ async function SuggestedProducts() {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
-      {products.map(product => {
+      {products.map((product, index) => {
         let imgUrl = '/images/product-placeholder.svg';
         try {
           const parsed = JSON.parse(product.images || '[]');
@@ -133,12 +133,13 @@ async function SuggestedProducts() {
           <ProductCard
             key={product.id}
             id={product.id}
-            name={product.name}
-            price={product.price}
-            category={product.category}
-            unit={product.unit || 'unité'}
-            storeId={product.storeId}
+            name={product.nom}
+            price={product.prix}
+            category={product.categorie}
+            unit={product.unite || 'unité'}
+            storeId={product.magasinId}
             image={imgUrl}
+            priority={index === 0}
           />
         );
       })}
@@ -147,24 +148,22 @@ async function SuggestedProducts() {
 }
 
 export default async function HomePage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('mcf_jwt_session')?.value;
-  const sessionUser = token ? (await verifyJWT(token)) as unknown as SessionUser : null;
+  const session = await getOptionalSession();
 
-  if (sessionUser) {
+  if (session) {
     return (
       <>
         {/* Authenticated Dashboard View */}
         <div className="max-w-7xl mx-auto px-4 py-12 space-y-20 animate-in fade-in duration-500">
           {/* Welcome Carousel Banner */}
-          <PromoCarousel userName={sessionUser.name || 'Client'} />
+          <PromoCarousel userName={session.name || 'Client'} />
 
           <Suspense
             fallback={
               <Skeleton className="h-36 rounded-[2rem] bg-white/40 dark:bg-slate-800/20 border border-slate-200/50 dark:border-white/5" />
             }
           >
-            <ActiveOrderTracker userId={sessionUser.id} userName={sessionUser.name || 'Client'} />
+            <ActiveOrderTracker userId={session.id} userName={session.name || 'Client'} />
           </Suspense>
 
           {/* Stores Section (Uniform Grid) */}
@@ -225,7 +224,7 @@ export default async function HomePage() {
         {/* Background Image using next/image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1920&auto=format&fit=crop"
+            src="https://picsum.photos/800/800"
             alt="Marché de produits frais"
             fill
             priority

@@ -8,16 +8,24 @@ export interface User {
   createdAt: Date;
 }
 
-export interface Store {
+export interface Magasin {
   id: string;
-  name: string;
-  address: string;
-  district: string;
-  phone: string;
+  nom: string;
+  adresse: string;
+  quartier: string;
+  telephone: string;
   logo: string | null;
   description: string | null;
-  isActive: boolean;
+  estActif: boolean;
+  // Rétro-compatibilité transitionnelle Phase 2
+  name?: string;
+  address?: string;
+  district?: string;
+  phone?: string;
+  isActive?: boolean;
 }
+
+export type Store = Magasin; // Alias temporaire de transition
 
 export interface Product {
   id: string;
@@ -30,14 +38,16 @@ export interface Product {
   unit: string | null;
   images: string | null;
   isActive: boolean;
-  storeId: string;
-  store?: Store;
+  magasinId: string;
+  magasin?: Magasin;
+  storeId?: string; // rétro-compatibilité temporaire pendant Phase 2
+  store?: Magasin;
 }
 
 export interface Order {
   id: string;
   userId: string;
-  storeId: string;
+  magasinId: string;
   total: number;
   deliveryFee: number;
   status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
@@ -45,7 +55,9 @@ export interface Order {
   deliveryAddress: string;
   createdAt: Date;
   orderItems?: OrderItem[];
-  store?: Store;
+  magasin?: Magasin;
+  storeId?: string;
+  store?: Magasin;
 }
 
 export interface OrderItem {

@@ -9,27 +9,17 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('=== DEBUT DE L\'ENRICHISSEMENT DE LA BASE DE DONNEES ===');
 
-  // Chargement de la configuration des images premium
-  const configPath = path.join(__dirname, '../images-assets-config.json');
-  let config: any = { stores: {}, products: {} };
-  try {
-    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    console.log('✓ Configuration des images premium chargée avec succès.');
-  } catch (error) {
-    console.error('⚠ Impossible de charger la configuration des images, fallbacks par défaut utilisés.', error);
-  }
-
   // ========================================================
   // ÉTAPE 1 : Nettoyage Complet et Ordonné (Teardown)
   // ========================================================
   console.log('1. Nettoyage de la base de données (Zero-Trust)...');
-  await prisma.orderItem.deleteMany({});
-  await prisma.order.deleteMany({});
-  await prisma.cartItem.deleteMany({});
-  await prisma.product.deleteMany({});
-  await prisma.store.deleteMany({});
+  await prisma.ligneCommande.deleteMany({});
+  await prisma.commande.deleteMany({});
+  await prisma.articlePanier.deleteMany({});
+  await prisma.produit.deleteMany({});
+  await prisma.magasin.deleteMany({});
   await prisma.notification.deleteMany({});
-  await prisma.user.deleteMany({});
+  await prisma.utilisateur.deleteMany({});
   console.log('✓ Tables nettoyées avec succès.');
 
   // ========================================================
@@ -44,31 +34,31 @@ async function main() {
 
   // Génération de 3 Administrateurs
   const adminsData = [
-    { id: randomUUID(), name: 'Christ APINDA', email: 'admin@mcf.com', password: adminHashedPassword, role: Role.ADMIN, phone: '+241066000000' },
-    { id: randomUUID(), name: 'Jules Nguema', email: 'jules@mcf.com', password: hashedPassword, role: Role.ADMIN, phone: '+241066112233' },
-    { id: randomUUID(), name: 'Sarah Bongo', email: 'sarah@mcf.com', password: hashedPassword, role: Role.ADMIN, phone: '+241077112233' }
+    { id: randomUUID(), nom: 'Christ APINDA', email: 'admin@mcf.com', motDePasse: adminHashedPassword, role: Role.ADMIN, telephone: '+241066000000' },
+    { id: randomUUID(), nom: 'Jules Nguema', email: 'jules@mcf.com', motDePasse: hashedPassword, role: Role.ADMIN, telephone: '+241066112233' },
+    { id: randomUUID(), nom: 'Sarah Bongo', email: 'sarah@mcf.com', motDePasse: hashedPassword, role: Role.ADMIN, telephone: '+241077112233' }
   ];
 
   // Génération de 15 Clients Réalistes
   const clientsData = [
-    { id: randomUUID(), name: 'Emma', email: 'client@mcf.com', password: clientHashedPassword, role: Role.CLIENT, phone: '+241066554433', address: 'Libreville, Louis' },
-    { id: randomUUID(), name: 'Marie Mba', email: 'marie@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077112244', address: 'Libreville, Glass' },
-    { id: randomUUID(), name: 'Paul Obiang', email: 'paul@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077223355', address: 'Libreville, Nzeng-Ayong' },
-    { id: randomUUID(), name: 'Jean-Pierre Ndong', email: 'jean-pierre@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077334466', address: 'Libreville, Oloumi' },
-    { id: randomUUID(), name: 'Christian Nguema', email: 'christian@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066778899', address: 'Libreville, Angondjé' },
-    { id: randomUUID(), name: 'Sophie Bongo', email: 'sophie@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066889900', address: 'Libreville, Akébé' },
-    { id: randomUUID(), name: 'Marc Koumba', email: 'marc@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066223344', address: 'Libreville, Charbonnages' },
-    { id: randomUUID(), name: 'Sylvie Mombo', email: 'sylvie@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066334455', address: 'Libreville, Louis' },
-    { id: randomUUID(), name: 'Alain Moussavou', email: 'alain@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066445566', address: 'Libreville, Oloumi' },
-    { id: randomUUID(), name: 'Patricia Makaya', email: 'patricia@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077445577', address: 'Libreville, Lalala' },
-    { id: randomUUID(), name: 'Charles Boulingui', email: 'charles@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077556688', address: 'Libreville, Glass' },
-    { id: randomUUID(), name: 'Florence Kombila', email: 'florence@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077667799', address: 'Libreville, Nzeng-Ayong' },
-    { id: randomUUID(), name: 'Eric Bekale', email: 'eric@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066998877', address: 'Libreville, Angondjé' },
-    { id: randomUUID(), name: 'Valerie Angoue', email: 'valerie@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241066887766', address: 'Libreville, Akébé' },
-    { id: randomUUID(), name: 'Sandrine Ntsame', email: 'sandrine@mcf.com', password: hashedPassword, role: Role.CLIENT, phone: '+241077889911', address: 'Libreville, Charbonnages' }
+    { id: randomUUID(), nom: 'Emma', email: 'client@mcf.com', motDePasse: clientHashedPassword, role: Role.CLIENT, telephone: '+241066554433', adresse: 'Libreville, Louis' },
+    { id: randomUUID(), nom: 'Marie Mba', email: 'marie@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077112244', adresse: 'Libreville, Glass' },
+    { id: randomUUID(), nom: 'Paul Obiang', email: 'paul@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077223355', adresse: 'Libreville, Nzeng-Ayong' },
+    { id: randomUUID(), nom: 'Jean-Pierre Ndong', email: 'jean-pierre@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077334466', adresse: 'Libreville, Oloumi' },
+    { id: randomUUID(), nom: 'Christian Nguema', email: 'christian@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066778899', adresse: 'Libreville, Angondjé' },
+    { id: randomUUID(), nom: 'Sophie Bongo', email: 'sophie@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066889900', adresse: 'Libreville, Akébé' },
+    { id: randomUUID(), nom: 'Marc Koumba', email: 'marc@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066223344', adresse: 'Libreville, Charbonnages' },
+    { id: randomUUID(), nom: 'Sylvie Mombo', email: 'sylvie@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066334455', adresse: 'Libreville, Louis' },
+    { id: randomUUID(), nom: 'Alain Moussavou', email: 'alain@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066445566', adresse: 'Libreville, Oloumi' },
+    { id: randomUUID(), nom: 'Patricia Makaya', email: 'patricia@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077445577', adresse: 'Libreville, Lalala' },
+    { id: randomUUID(), nom: 'Charles Boulingui', email: 'charles@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077556688', adresse: 'Libreville, Glass' },
+    { id: randomUUID(), nom: 'Florence Kombila', email: 'florence@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077667799', adresse: 'Libreville, Nzeng-Ayong' },
+    { id: randomUUID(), nom: 'Eric Bekale', email: 'eric@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066998877', adresse: 'Libreville, Angondjé' },
+    { id: randomUUID(), nom: 'Valerie Angoue', email: 'valerie@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241066887766', adresse: 'Libreville, Akébé' },
+    { id: randomUUID(), nom: 'Sandrine Ntsame', email: 'sandrine@mcf.com', motDePasse: hashedPassword, role: Role.CLIENT, telephone: '+241077889911', adresse: 'Libreville, Charbonnages' }
   ];
 
-  await prisma.user.createMany({
+  await prisma.utilisateur.createMany({
     data: [...adminsData, ...clientsData]
   });
 
@@ -82,20 +72,30 @@ async function main() {
   console.log('3. Génération des magasins partenaires (10 magasins)...');
 
   const storeDefinitions = [
-    { id: randomUUID(), name: 'Mbolo Supermarché', address: 'Boulevard Triomphal, Libreville', district: 'Mbolo', phone: '+24111740001', logo: config.stores['Mbolo Supermarché']?.url || '/images/store-placeholder.svg', description: 'Le plus grand supermarché historique de Libreville. Alimentation générale, fruits et légumes.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'Géant Casino', address: 'Avenue de Cointet, Libreville', district: 'Glass', phone: '+24111760002', logo: config.stores['Géant Casino']?.url || '/images/store-placeholder.svg', description: 'Produits frais, épicerie fine et importations de qualité supérieure.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'Prix Import', address: 'Zone Industrielle Oloumi, Libreville', district: 'Oloumi', phone: '+24111720022', logo: config.stores['Prix Import']?.url || '/images/store-placeholder.svg', description: 'Le supermarché discount n°1 pour faire de grandes économies sur vos courses.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'San Gel', address: 'Avenue de Cointet, Libreville', district: 'Glass', phone: '+24111760021', logo: config.stores['San Gel']?.url || '/images/store-placeholder.svg', description: 'Le spécialiste des surgelés, viandes et poissons frais à Libreville.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'Hygiène & Beauté MCF', address: 'Carrefour Angondjé, Libreville', district: 'Angondjé', phone: '+24111700024', logo: config.stores['Hygiène & Beauté MCF']?.url || '/images/store-placeholder.svg', description: 'Produits de douche, soins corporels, capillaires et bien-être.', isActive: true, isDeleted: false, category: 'Hygiène' },
-    { id: randomUUID(), name: 'Marché de Louis', address: 'Carrefour Louis, Libreville', district: 'Louis', phone: '+24111780023', logo: config.stores['Marché de Louis']?.url || '/images/store-placeholder.svg', description: 'Épicerie fine, légumes locaux de qualité et produits frais de saison.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'Bébé & Maman Libreville', address: 'Avenue des Mines, Libreville', district: 'Oloumi', phone: '+24111750026', logo: config.stores['Bébé & Maman Libreville']?.url || '/images/store-placeholder.svg', description: 'Couches, laits de croissance, petits pots et accessoires pour votre bébé.', isActive: true, isDeleted: false, category: 'Bébé' },
-    { id: randomUUID(), name: 'Supergros Grossiste', address: 'Centre-ville, Libreville', district: 'Centre-ville', phone: '+24111710025', logo: config.stores['Supergros Grossiste']?.url || '/images/store-placeholder.svg', description: 'Achat en gros de riz, huiles, pâtes et produits d\'alimentation générale.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'Boulangerie Pâtisserie MCF', address: 'Rond-point des Charbonnages, Libreville', district: 'Charbonnages', phone: '+24111730027', logo: config.stores['Boulangerie Pâtisserie MCF']?.url || '/images/store-placeholder.svg', description: 'Pains chauds, viennoiseries et pâtisseries maison faites avec amour.', isActive: true, isDeleted: false, category: 'Alimentaire' },
-    { id: randomUUID(), name: 'Clean Gabon', address: 'Carrefour Akébé, Libreville', district: 'Akébé', phone: '+24111790028', logo: config.stores['Clean Gabon']?.url || '/images/store-placeholder.svg', description: 'Lessives, produits d\'entretien et tout le nécessaire de nettoyage de maison.', isActive: true, isDeleted: false, category: 'Nettoyage' }
+    { id: randomUUID(), name: 'Mbolo Supermarché', address: 'Boulevard Triomphal, Libreville', district: 'Mbolo', phone: '+24111740001', logo: '/images/seed/stores/store-mbolo.jpg', description: 'Le plus grand supermarché historique de Libreville. Alimentation générale, fruits et légumes.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: "Épicerie d'Angondjé", address: 'Carrefour Angondjé, Libreville', district: 'Angondjé', phone: '+24111760002', logo: '/images/seed/stores/store-angondje.jpg', description: 'Produits frais, épicerie fine et produits locaux de qualité.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: 'Supermarché Akanda', address: 'Avorbam, Akanda', district: 'Akanda', phone: '+24111720022', logo: '/images/seed/stores/store-akanda.jpg', description: 'Le supermarché moderne d Akanda pour vos courses quotidiennes au meilleur prix.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: 'Marché du Mont-Bouët', address: 'Centre-ville, Libreville', district: 'Mont-Bouët', phone: '+24111760021', logo: '/images/seed/stores/store-mont-bouet.jpg', description: 'Le cœur battant du commerce gabonais : produits locaux, poissons, épices et tubercules.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: 'Épicerie Fine de Louis', address: 'Carrefour Louis, Libreville', district: 'Louis', phone: '+24111780023', logo: '/images/seed/stores/store-louis.jpg', description: 'Épicerie fine, légumes locaux de sélection et produits frais de saison.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: 'Hygiène & Beauté MCF', address: 'Carrefour Angondjé, Libreville', district: 'Angondjé', phone: '+24111700024', logo: '/images/seed/stores/store-angondje.jpg', description: 'Produits de douche, soins corporels, capillaires et bien-être.', isActive: true, isDeleted: false, category: 'Hygiène' },
+    { id: randomUUID(), name: 'San Gel Surgelés', address: 'Avenue de Cointet, Libreville', district: 'Glass', phone: '+24111760025', logo: '/images/seed/stores/store-akanda.jpg', description: 'Le spécialiste des surgelés, viandes, poissons et crustacés de Port-Gentil.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: 'Bébé & Maman Libreville', address: 'Avenue des Mines, Libreville', district: 'Oloumi', phone: '+24111750026', logo: '/images/seed/stores/store-louis.jpg', description: 'Couches, laits de croissance, petits pots et accessoires pour votre bébé.', isActive: true, isDeleted: false, category: 'Bébé' },
+    { id: randomUUID(), name: 'Supergros Grossiste', address: 'Zone Industrielle Oloumi, Libreville', district: 'Oloumi', phone: '+24111710027', logo: '/images/seed/stores/store-mont-bouet.jpg', description: 'Achat en gros de riz, huiles, pâtes et produits d alimentation générale.', isActive: true, isDeleted: false, category: 'Alimentaire' },
+    { id: randomUUID(), name: 'Clean Gabon', address: 'Carrefour Akébé, Libreville', district: 'Akébé', phone: '+24111790028', logo: '/images/seed/stores/store-mbolo.jpg', description: 'Lessives, produits d entretien et tout le nécessaire de nettoyage de maison.', isActive: true, isDeleted: false, category: 'Nettoyage' }
   ];
 
-  const storesData = storeDefinitions.map(({ category, ...storeData }) => storeData);
-  await prisma.store.createMany({
+  const storesData = storeDefinitions.map(({ category, ...s }) => ({
+    id: s.id,
+    nom: s.name,
+    adresse: s.address,
+    quartier: s.district,
+    telephone: s.phone,
+    logo: s.logo,
+    description: s.description,
+    estActif: s.isActive,
+    estSupprime: s.isDeleted
+  }));
+  await prisma.magasin.createMany({
     data: storesData
   });
 
@@ -107,56 +107,33 @@ async function main() {
   // ========================================================
   console.log('4. Génération du catalogue produits (15 à 20 produits par magasin)...');
   
-  const productTemplates: Record<string, { name: string; description: string; basePrice: number; unit: string }[]> = {
+  const productTemplates: Record<string, { name: string; description: string; basePrice: number; unit: string; images: string[] }[]> = {
     'Alimentaire': [
-      { name: 'Riz Parfumé Premium 5kg', description: 'Riz blanc long grain parfumé de qualité supérieure.', basePrice: 4800, unit: 'sac' },
-      { name: 'Huile de Tournesol 1L', description: 'Huile végétale pour friture saine et assaisonnement.', basePrice: 1250, unit: 'bouteille' },
-      { name: 'Lait Demi-Écrémé UHT 1L', description: 'Lait de vache demi-écrémé stérilisé.', basePrice: 850, unit: 'brique' },
-      { name: 'Spaghetti blé dur 500g', description: 'Pâtes de qualité supérieure, cuisson 8 minutes.', basePrice: 600, unit: 'paquet' },
-      { name: 'Café Arabica Pur 250g', description: 'Café moulu arômes intenses de caféiers de montagne.', basePrice: 2400, unit: 'paquet' },
-      { name: 'Thé Vert Menthe (25 s.)', description: 'Boîte de 25 sachets de thé vert parfumé à la menthe.', basePrice: 1500, unit: 'boîte' },
-      { name: 'Farine de Blé T55 1kg', description: 'Farine de blé fine idéale pour gâteaux et pain.', basePrice: 750, unit: 'paquet' },
-      { name: 'Sucre Blanc Morceaux 1kg', description: 'Sucre de canne raffiné en morceaux réguliers.', basePrice: 1100, unit: 'boîte' },
-      { name: 'Beurre Doux 250g', description: 'Beurre fin de table, goût riche et onctueux.', basePrice: 1750, unit: 'pièce' },
-      { name: 'Confiture de Fraise 370g', description: 'Préparée avec 50% de fruits mûrs sélectionnés.', basePrice: 1650, unit: 'pot' },
-      { name: 'Poulet Surgelé Entier 1.3kg', description: 'Poulet prêt à cuire élevé en plein air.', basePrice: 3500, unit: 'pièce' },
-      { name: 'Œufs Frais du Gabon (x30)', description: 'Plateau de 30 œufs de ferme calibre moyen.', basePrice: 3200, unit: 'plateau' },
-      { name: 'Sardines Pimentées (boîte)', description: 'Sardines entières à l\'huile avec une pointe de piment.', basePrice: 750, unit: 'boîte' },
-      { name: 'Biscuits Sablés Beurre', description: 'Sablés traditionnels fondants et croustillants.', basePrice: 950, unit: 'paquet' },
-      { name: 'Yaourts aux Fruits (x4)', description: 'Assortiment de 4 yaourts crémeux aux fruits.', basePrice: 1400, unit: 'pack' },
-      { name: 'Sel Fin de Table 1kg', description: 'Sel marin fin enrichi en iode pour la cuisine.', basePrice: 350, unit: 'paquet' },
-      { name: 'Pain de Mie Tranché', description: 'Pain de mie nature extra moelleux, idéal pour toasts.', basePrice: 1200, unit: 'paquet' },
-      { name: 'Baguette de Pain MCF', description: 'Baguette de pain blanc croustillante, cuite sur place.', basePrice: 150, unit: 'pièce' },
-      { name: 'Croissant au Beurre', description: 'Viennoiserie pur beurre croustillante et fondante.', basePrice: 400, unit: 'pièce' }
+      { name: 'Banane Plantain Mûre (Régime)', description: 'Régime de bananes plantains mûres et douces, idéales pour alloco, banane pilée ou friture.', basePrice: 3500, unit: 'régime', images: ['/images/seed/products/product-banane-plantain.jpg'] },
+      { name: 'Huile de Palme Rouge 1L', description: 'Huile de palme naturelle non raffinée du Gabon, riche en vitamine A pour le nyembwe et sauces traditionnelles.', basePrice: 1800, unit: 'bouteille', images: ['/images/seed/products/product-huile-palme.jpg'] },
+      { name: 'Bâtons de Manioc du Haut-Ogooué (x5)', description: 'Lot de 5 bâtons de manioc traditionnels fermes et savoureux.', basePrice: 2000, unit: 'paquet', images: ['/images/seed/products/product-manioc.jpg'] },
+      { name: 'Capitaine Fumé du Gabon', description: 'Morceau de poisson capitaine fraîchement fumé au bois tropical, parfait pour les bouillons et sauces.', basePrice: 4500, unit: 'pièce', images: ['/images/seed/products/product-poisson-fume.jpg'] },
+      { name: 'Riz Parfumé Long Grain 5kg', description: 'Riz blanc long grain parfumé de qualité supérieure pour accompagner vos plats en sauce.', basePrice: 4800, unit: 'sac', images: ['/images/seed/products/product-riz-parfume.jpg'] },
+      { name: 'Pain d Odika (Chocolat indigène)', description: 'Bloc d odika traditionnel en poudre ou pain pour épaissir et aromatiser le poulet ou poisson.', basePrice: 2500, unit: 'pièce', images: ['/images/seed/products/product-odika.jpg'] },
+      { name: 'Pâte d Arachide Naturelle 500g', description: 'Pâte d arachide 100% pure et onctueuse pour sauce mafé ou poulet aux arachides.', basePrice: 2200, unit: 'pot', images: ['/images/seed/products/product-arachides.jpg'] },
+      { name: 'Piment Gabonais Fort en Pot', description: 'Purée de piment habanero local aux épices gabonaises, relevé et parfumé.', basePrice: 1500, unit: 'pot', images: ['/images/seed/products/product-piment-gabonais.jpg'] },
+      { name: 'Feuilles de Manioc Pilées (Saka-Saka)', description: 'Sachet de feuilles de manioc fraîches pilées prêtes à cuire à l huile de palme ou pâte d arachide.', basePrice: 1200, unit: 'sachet', images: ['/images/seed/products/product-feuilles-manioc.jpg'] },
+      { name: 'Rouge Frais de Port-Gentil (Lutjan 1.5kg)', description: 'Poisson rouge entier frais pêché au large de Port-Gentil, nettoyé et prêt pour la braise.', basePrice: 7500, unit: 'pièce', images: ['/images/seed/products/product-poisson-frais.jpg'] },
+      { name: 'Farine de Blé T55 1kg', description: 'Farine blanche fine idéale pour la pâtisserie, les beignets traditionnels et le pain.', basePrice: 750, unit: 'paquet', images: ['/images/seed/products/product-farine.jpg'] }
     ],
     'Boissons': [
-      { name: 'Jus d\'Orange Pur 1L', description: 'Jus de fruits fraîchement pressés, sans sucres ajoutés.', basePrice: 1300, unit: 'brique' },
-      { name: 'Eau Minérale Locale 1.5L', description: 'Eau de source naturelle purifiée en bouteille.', basePrice: 400, unit: 'bouteille' },
-      { name: 'Soda Coca-Cola 1.5L', description: 'Boisson rafraîchissante aux extraits végétaux.', basePrice: 1100, unit: 'bouteille' },
-      { name: 'Bière Régab (canette 33cl)', description: 'Bière blonde gabonaise emblématique et rafraîchissante.', basePrice: 600, unit: 'canette' },
-      { name: 'Eau Gazeuse 1L', description: 'Eau minérale pétillante pour une fraîcheur intense.', basePrice: 800, unit: 'bouteille' },
-      { name: 'Vin Rouge Bordeaux 75cl', description: 'Vin de Bordeaux équilibré aux arômes de fruits rouges.', basePrice: 4500, unit: 'bouteille' }
+      { name: 'Bière Régab (canette 33cl)', description: 'Bière blonde gabonaise emblématique et rafraîchissante, brassée au Gabon.', basePrice: 600, unit: 'canette', images: ['/images/seed/products/product-regab.jpg'] },
+      { name: 'Eau Minérale Naturelle Andza 1.5L', description: 'Eau minérale naturelle puisée à la source d Olénga au Gabon, pure et équilibrée.', basePrice: 600, unit: 'bouteille', images: ['/images/seed/products/product-eau-andza.jpg'] },
+      { name: 'Lait Demi-Écrémé UHT 1L', description: 'Lait de vache demi-écrémé stérilisé UHT, riche en calcium pour toute la famille.', basePrice: 950, unit: 'brique', images: ['/images/seed/products/product-lait.jpg'] }
     ],
     'Hygiène': [
-      { name: 'Shampoing Doux Aloe Vera', description: 'Nourrit et apporte brillance aux cheveux normaux.', basePrice: 3800, unit: 'flacon' },
-      { name: 'Gel Douche Hydratant 400ml', description: 'Parfum frais et vivifiant pour un réveil énergique.', basePrice: 2900, unit: 'flacon' },
-      { name: 'Huile de Coco Vierge 250ml', description: 'Huile de coco pure pour soins capillaires et corporels.', basePrice: 4800, unit: 'flacon' },
-      { name: 'Lait Corporel Karité 250ml', description: 'Nourrit intensément les peaux sèches et déshydratées.', basePrice: 5500, unit: 'flacon' },
-      { name: 'Crème Mains Réparatrice', description: 'Soin concentré pour mains sèches et abîmées.', basePrice: 3200, unit: 'tube' },
-      { name: 'Crème Hydratante Visage 50ml', description: 'Soin hydratant protecteur quotidien, texture légère.', basePrice: 11500, unit: 'pot' },
-      { name: 'Crème Solaire Visage SPF50', description: 'Haute protection UV non grasse pour le visage.', basePrice: 9800, unit: 'tube' }
+      { name: 'Savon de Toilette à l Huile de Palme', description: 'Savon végétal doux et hydratant enrichi en huile de palme et extraits naturels du Gabon.', basePrice: 850, unit: 'pièce', images: ['/images/seed/products/product-savon-palm.jpg'] }
     ],
     'Nettoyage': [
-      { name: 'Lessive Liquide Machine 3L', description: 'Lessive concentrée pour un linge blanc éclatant et coloré.', basePrice: 6500, unit: 'bidon' },
-      { name: 'Liquide Vaisselle Citron 1L', description: 'Dégraisse en profondeur et laisse un parfum de citron frais.', basePrice: 1400, unit: 'bouteille' },
-      { name: 'Eau de Javel 2L', description: 'Solution désinfectante multi-usages pour toute la maison.', basePrice: 1800, unit: 'bouteille' },
-      { name: 'Nettoyant Multi-Surfaces 1L', description: 'Nettoie, dégraisse et fait briller toutes les surfaces lavables.', basePrice: 2200, unit: 'bouteille' }
+      { name: 'Lessive Liquide Multi-Usages 3L', description: 'Lessive concentrée efficace contre les taches difficiles, parfum fraîcheur intense.', basePrice: 6500, unit: 'bidon', images: ['/images/seed/products/product-savon-palm.jpg'] }
     ],
     'Bébé': [
-      { name: 'Couches Bébé Taille 4 (x50)', description: 'Couches ultra absorbantes offrant jusqu\'à 12h de protection.', basePrice: 9500, unit: 'paquet' },
-      { name: 'Lait 1er Âge Poudre 800g', description: 'Formule infantile complète pour nourrissons de 0 à 6 mois.', basePrice: 6800, unit: 'boîte' },
-      { name: 'Lingettes Bébé Sensitives (x80)', description: 'Lingettes biodégradables sans parfum pour peaux sensibles.', basePrice: 1800, unit: 'paquet' },
-      { name: 'Shampoing Bébé Sans Larmes', description: 'Nettoie en douceur les cheveux délicats des bébés.', basePrice: 2200, unit: 'flacon' }
+      { name: 'Couches Bébé Confort Taille 4 (x50)', description: 'Couches douces et ultra-absorbantes adaptées au climat tropical, protection 12h.', basePrice: 9500, unit: 'paquet', images: ['/images/seed/products/product-lait.jpg'] }
     ]
   };
 
@@ -165,15 +142,9 @@ async function main() {
   for (const store of createdStores) {
     // Déterminer les catégories de produits à ajouter à ce magasin
     let categoriesToSeed: string[] = [];
-    if (['Mbolo Supermarché', 'Géant Casino', 'Prix Import'].includes(store.name)) {
+    if (['Mbolo Supermarché', "Épicerie d'Angondjé", 'Supermarché Akanda'].includes(store.name)) {
       categoriesToSeed = ['Alimentaire', 'Boissons', 'Hygiène', 'Nettoyage', 'Bébé'];
-    } else if (store.name === 'San Gel') {
-      categoriesToSeed = ['Alimentaire', 'Boissons'];
-    } else if (store.name === 'Marché de Louis') {
-      categoriesToSeed = ['Alimentaire', 'Boissons'];
-    } else if (store.name === 'Supergros Grossiste') {
-      categoriesToSeed = ['Alimentaire', 'Boissons'];
-    } else if (store.name === 'Boulangerie Pâtisserie MCF') {
+    } else if (store.name === 'Marché du Mont-Bouët' || store.name === 'Épicerie Fine de Louis' || store.name === 'San Gel Surgelés' || store.name === 'Supergros Grossiste') {
       categoriesToSeed = ['Alimentaire', 'Boissons'];
     } else if (store.name === 'Bébé & Maman Libreville') {
       categoriesToSeed = ['Bébé', 'Hygiène'];
@@ -196,31 +167,30 @@ async function main() {
         const isOutOfStock = Math.random() < 0.15;
         const stock = isOutOfStock ? 0 : Math.floor(10 + Math.random() * 190);
 
-        const productImg = config.products[temp.name]?.url || '/images/product-placeholder.svg';
         productsToCreate.push({
           id: randomUUID(),
-          name: temp.name,
+          nom: temp.name,
           description: temp.description,
-          price: finalPrice,
+          prix: finalPrice,
           stock: stock,
-          unit: temp.unit,
-          category: cat,
-          images: JSON.stringify([productImg]),
-          storeId: store.id,
-          isActive: true,
-          isDeleted: false
+          unite: temp.unit,
+          categorie: cat,
+          images: JSON.stringify(temp.images),
+          magasinId: store.id,
+          estActif: true,
+          estSupprime: false
         });
       }
     }
   }
 
   // Insertion en masse via createMany pour optimiser les performances de TiDB
-  await prisma.product.createMany({
+  await prisma.produit.createMany({
     data: productsToCreate
   });
 
   // Récupération de tous les produits créés
-  const allProducts = await prisma.product.findMany({});
+  const allProducts = await prisma.produit.findMany({});
   console.log(`✓ ${allProducts.length} Produits insérés dans le catalogue.`);
 
   // ========================================================
@@ -231,10 +201,10 @@ async function main() {
   // Associer les produits par magasin pour simuler des commandes cohérentes (panier mono-boutique)
   const storeProductsMap = new Map<string, any[]>();
   for (const p of allProducts) {
-    if (!storeProductsMap.has(p.storeId)) {
-      storeProductsMap.set(p.storeId, []);
+    if (!storeProductsMap.has(p.magasinId)) {
+      storeProductsMap.set(p.magasinId, []);
     }
-    storeProductsMap.get(p.storeId)!.push(p);
+    storeProductsMap.get(p.magasinId)!.push(p);
   }
 
   const activeStoreIds = Array.from(storeProductsMap.keys());
@@ -263,28 +233,28 @@ async function main() {
     const activeOrderId = randomUUID();
     
     for (const item of emmaActiveItems) {
-      itemsTotal += item.product.price * item.qty;
+      itemsTotal += item.product.prix * item.qty;
       orderItemsToCreate.push({
         id: randomUUID(),
-        orderId: activeOrderId,
-        productId: item.product.id,
-        quantity: item.qty,
-        price: item.product.price
+        commandeId: activeOrderId,
+        produitId: item.product.id,
+        quantite: item.qty,
+        prixUnitaire: item.product.prix
       });
     }
 
     const activeOrderDate = new Date(); // aujourd'hui
     ordersToCreate.push({
       id: activeOrderId,
-      userId: emmaUser.id,
-      storeId: mboloStore.id,
+      utilisateurId: emmaUser.id,
+      magasinId: mboloStore.id,
       total: itemsTotal + deliveryFee,
-      deliveryFee,
-      status: OrderStatus.PAID,
-      paymentMethod: 'airtel',
-      deliveryAddress: 'Emma - +241066554433 - Libreville, quartier Louis, Villa MCF',
-      createdAt: activeOrderDate,
-      updatedAt: activeOrderDate
+      fraisLivraison: deliveryFee,
+      statut: OrderStatus.PAID,
+      methodePaiement: 'airtel',
+      adresseLivraison: 'Emma - +241066554433 - Libreville, quartier Louis, Villa MCF',
+      creeLe: activeOrderDate,
+      misAJourLe: activeOrderDate
     });
 
     // B. Trois commandes passées (DELIVERED) plus anciennes pour l'onglet historique du profil
@@ -300,23 +270,23 @@ async function main() {
 
       ordersToCreate.push({
         id: orderId,
-        userId: emmaUser.id,
-        storeId: randomStoreId,
-        total: (product.price * qty) + deliveryFee,
-        deliveryFee,
-        status: OrderStatus.DELIVERED,
-        paymentMethod: paymentMethods[k % paymentMethods.length],
-        deliveryAddress: 'Emma - +241066554433 - Libreville, quartier Louis, Villa MCF',
-        createdAt: orderDate,
-        updatedAt: orderDate
+        utilisateurId: emmaUser.id,
+        magasinId: randomStoreId,
+        total: (product.prix * qty) + deliveryFee,
+        fraisLivraison: deliveryFee,
+        statut: OrderStatus.DELIVERED,
+        methodePaiement: paymentMethods[k % paymentMethods.length],
+        adresseLivraison: 'Emma - +241066554433 - Libreville, quartier Louis, Villa MCF',
+        creeLe: orderDate,
+        misAJourLe: orderDate
       });
 
       orderItemsToCreate.push({
         id: randomUUID(),
-        orderId,
-        productId: product.id,
-        quantity: qty,
-        price: product.price
+        commandeId: orderId,
+        produitId: product.id,
+        quantite: qty,
+        prixUnitaire: product.prix
       });
     }
     console.log('✓ Commandes tests d\'Emma préparées.');
@@ -350,13 +320,13 @@ async function main() {
 
     for (const p of selectedProducts) {
       const qty = Math.floor(Math.random() * 2) + 1;
-      itemsTotal += p.price * qty;
+      itemsTotal += p.prix * qty;
       orderItemsToCreate.push({
         id: randomUUID(),
-        orderId,
-        productId: p.id,
-        quantity: qty,
-        price: p.price
+        commandeId: orderId,
+        produitId: p.id,
+        quantite: qty,
+        prixUnitaire: p.prix
       });
     }
 
@@ -371,23 +341,23 @@ async function main() {
 
     ordersToCreate.push({
       id: orderId,
-      userId: client.id,
-      storeId,
+      utilisateurId: client.id,
+      magasinId: storeId,
       total: itemsTotal + deliveryFee,
-      deliveryFee,
-      status,
-      paymentMethod,
-      deliveryAddress: `${client.name} - ${client.phone} - ${client.address || 'Libreville, Gabon'}`,
-      createdAt: orderDate,
-      updatedAt: orderDate
+      fraisLivraison: deliveryFee,
+      statut: status,
+      methodePaiement: paymentMethod,
+      adresseLivraison: `${client.nom} - ${client.telephone} - ${client.adresse || 'Libreville, Gabon'}`,
+      creeLe: orderDate,
+      misAJourLe: orderDate
     });
   }
 
   // Insertion en masse dans l'ordre pour respecter l'intégrité référentielle
-  await prisma.order.createMany({
+  await prisma.commande.createMany({
     data: ordersToCreate
   });
-  await prisma.orderItem.createMany({
+  await prisma.ligneCommande.createMany({
     data: orderItemsToCreate
   });
 
@@ -411,7 +381,7 @@ async function main() {
     type: alert.type,
     message: alert.message,
     reference: alert.reference,
-    isRead: false
+    estLu: false
   }));
 
   await prisma.notification.createMany({

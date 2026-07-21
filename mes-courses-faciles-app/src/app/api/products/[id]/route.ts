@@ -8,12 +8,12 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const product = await prisma.product.findUnique({
+    const product = await prisma.produit.findUnique({
       where: { id },
       include: {
-        store: {
+        magasin: {
           select: {
-            name: true,
+            nom: true,
           }
         }
       }
@@ -23,7 +23,15 @@ export async function GET(
       return NextResponse.json({ error: 'Produit non trouvé' }, { status: 404 });
     }
 
-    return NextResponse.json(product);
+    const formatted = {
+      ...product,
+      name: product.nom,
+      price: product.prix,
+      category: product.categorie,
+      unit: product.unite,
+      store: product.magasin ? { name: product.magasin.nom, nom: product.magasin.nom } : null
+    };
+    return NextResponse.json(formatted);
   } catch (error) {
     return NextResponse.json({ error: 'Une erreur serveur interne est survenue.' }, { status: 500 });
   }

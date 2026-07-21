@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { isAbortOrNetworkCancellationError } from '@/lib/network-resilience';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -48,20 +49,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // refresh every 30s
-    return () => clearInterval(interval);
+    const controller = new AbortController();
+    fetchNotifications(controller.signal);
+    const interval = setInterval(() => fetchNotifications(controller.signal), 30000); // refresh every 30s
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/admin/notifications');
-      if (res.ok) {
+      const res = await fetch('/api/admin/notifications', { signal });
+      if (res.ok && (!signal || !signal.aborted)) {
         const data = await res.json();
         setNotifications(data);
       }
     } catch (e) {
-      console.error("Failed to fetch notifications", e);
+      if (!isAbortOrNetworkCancellationError(e)) {
+        console.error("Failed to fetch notifications", e);
+      }
     }
   };
 

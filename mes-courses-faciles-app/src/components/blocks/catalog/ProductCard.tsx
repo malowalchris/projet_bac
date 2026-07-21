@@ -9,9 +9,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useFavorites } from '@/hooks/useFavorites';
 import { ImageWithLoader } from '@/components/ui/ImageWithLoader';
 import { resolveImageUrl } from '@/lib/image-resolver';
+import { FavoriteButton } from '@/components/blocks/catalog/FavoriteButton';
 
 /** Seuil en jours pour qualifier un produit de "Nouveau" */
 const NEW_PRODUCT_DAYS = 30;
@@ -28,6 +28,8 @@ interface ProductCardProps {
   /** Date de création — optionnelle. Permet d'afficher le badge "Nouveau". */
   createdAt?: Date | string;
   storeName?: string;
+  /** Priorité de chargement LCP (généralement index === 0 dans une liste mappée) */
+  priority?: boolean;
 }
 
 /** Retourne true si le produit a été créé il y a moins de NEW_PRODUCT_DAYS jours */
@@ -40,11 +42,10 @@ function isNewProduct(createdAt?: Date | string): boolean {
 }
 
 export const ProductCard = ({
-  id, name, price, image, category, unit, storeId, createdAt, storeName
+  id, name, price, image, category, unit, storeId, createdAt, storeName, priority = false
 }: ProductCardProps) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const router = useRouter();
   const pathname = usePathname();
   const [isAdded, setIsAdded] = useState(false);
@@ -52,7 +53,6 @@ export const ProductCard = ({
   // Résolution centralisée de l'image (JSON, local, Cloudinary, null → placeholder)
   const resolvedImage = resolveImageUrl(image, 'product');
 
-  const isFav = isFavorite(id);
   const isNew = isNewProduct(createdAt);
 
   const handleAdd = (e: React.MouseEvent) => {
@@ -67,18 +67,6 @@ export const ProductCard = ({
     addToCart({ id, name, price, image: resolvedImage, category, unit, storeId });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1200);
-  };
-
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!user) {
-      router.push(`?auth=login&callbackUrl=${encodeURIComponent(pathname)}`);
-      return;
-    }
-
-    toggleFavorite({ id, name, price, image: resolvedImage, category, unit, storeId });
   };
 
   return (
@@ -99,6 +87,7 @@ export const ProductCard = ({
               alt={name}
               type="product"
               objectFit="contain"
+              priority={priority}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="absolute inset-0 bg-white dark:bg-slate-900/60 group-hover:scale-110 transition-transform duration-500 ease-out transform-gpu"
             />
@@ -114,30 +103,20 @@ export const ProductCard = ({
 
           {/* ── Bouton Favoris (haut-gauche si pas de badge) ── */}
           {!isNew && (
-            <button
-              onClick={handleToggleFavorite}
-              className="absolute top-3 left-3 h-10 w-10 bg-background/80 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center text-foreground hover:bg-accent hover:text-accent-foreground transition-all active:scale-90 z-10"
-              aria-label="Ajouter aux favoris"
-            >
-              <Heart
-                size={18}
-                className={cn("transition-all duration-300", isFav ? "fill-red-500 text-red-500 scale-110" : "text-slate-500")}
-              />
-            </button>
+            <FavoriteButton
+              product={{ id, name, price, image: resolvedImage, category, unit, storeId }}
+              size={18}
+              className="absolute top-3 left-3"
+            />
           )}
 
           {/* ── Bouton favori secondaire quand badge présent ── */}
           {isNew && (
-            <button
-              onClick={handleToggleFavorite}
-              className="absolute bottom-3 left-3 h-8 w-8 bg-background/80 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center text-foreground hover:bg-accent transition-all active:scale-90 z-10"
-              aria-label="Ajouter aux favoris"
-            >
-              <Heart
-                size={15}
-                className={cn("transition-all duration-300", isFav ? "fill-red-500 text-red-500" : "text-slate-500")}
-              />
-            </button>
+            <FavoriteButton
+              product={{ id, name, price, image: resolvedImage, category, unit, storeId }}
+              size={15}
+              className="absolute bottom-3 left-3 h-8 w-8"
+            />
           )}
 
           {/* ── Bouton ajout rapide (haut-droite, visible au hover) ── */}

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { isAbortOrNetworkCancellationError } from '@/lib/network-resilience';
 
 import { 
   Sheet, 
@@ -70,28 +71,33 @@ export function ProductCreateSheet({ isOpen, onClose, onSuccess, defaultStoreId 
 
   // Fetch stores list for mapping
   useEffect(() => {
-    if (isOpen) {
-      const fetchStores = async () => {
-        setLoadingStores(true);
-        try {
-          const res = await fetch('/api/stores');
-          if (res.ok) {
-            const data = await res.json();
-            setStores(data);
-            if (defaultStoreId) {
-              setValue('storeId', defaultStoreId);
-            } else if (data.length > 0) {
-              setValue('storeId', data[0].id);
-            }
+    if (!isOpen) return;
+    const controller = new AbortController();
+    const fetchStores = async () => {
+      setLoadingStores(true);
+      try {
+        const res = await fetch('/api/stores', { signal: controller.signal });
+        if (res.ok && !controller.signal.aborted) {
+          const data = await res.json();
+          setStores(data);
+          if (defaultStoreId) {
+            setValue('storeId', defaultStoreId);
+          } else if (data.length > 0) {
+            setValue('storeId', data[0].id);
           }
-        } catch (err) {
+        }
+      } catch (err) {
+        if (!isAbortOrNetworkCancellationError(err)) {
           console.error("Failed to load stores:", err);
-        } finally {
+        }
+      } finally {
+        if (!controller.signal.aborted) {
           setLoadingStores(false);
         }
-      };
-      fetchStores();
-    }
+      }
+    };
+    fetchStores();
+    return () => controller.abort();
   }, [isOpen, defaultStoreId, setValue]);
 
   // Reset state on open/close
@@ -184,8 +190,13 @@ export function ProductCreateSheet({ isOpen, onClose, onSuccess, defaultStoreId 
     try {
       const result = await createProductAction({
         ...data,
+        nom: data.name,
+        prix: data.price,
+        categorie: data.category,
+        unite: data.unit,
+        magasinId: data.storeId,
         images: imageUrls,
-      });
+      } as any);
 
       if (result.success) {
         toast.success(`Le produit ${data.name} a été créé.`);
@@ -241,7 +252,7 @@ export function ProductCreateSheet({ isOpen, onClose, onSuccess, defaultStoreId 
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all outline-none text-slate-800 dark:text-white font-medium text-sm"
                 >
                   {stores.map(s => (
-                    <option key={s.id} value={s.id}>{s.name} ({s.district})</option>
+                    <option key={s.id} value={s.id}>{s.nom || s.name} ({s.quartier || s.district})</option>
                   ))}
                   {stores.length === 0 && (
                     <option value="">Aucun magasin disponible</option>

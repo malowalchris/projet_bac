@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { isAbortOrNetworkCancellationError } from '@/lib/network-resilience';
 
 interface FetchOptions extends RequestInit {
   body?: any;
@@ -33,8 +34,10 @@ export function useApi() {
 
       return data;
     } catch (err: any) {
-      const msg = err.message || 'Une erreur inconnue est survenue';
-      setError(msg);
+      if (!isAbortOrNetworkCancellationError(err)) {
+        const msg = err.message || 'Une erreur inconnue est survenue';
+        setError(msg);
+      }
       throw err;
     } finally {
       setLoading(false);

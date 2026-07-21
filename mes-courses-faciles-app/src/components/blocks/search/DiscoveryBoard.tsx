@@ -41,26 +41,36 @@ async function TrendingProductsSection() {
     category: string;
     unit: string | null;
     images: string | null;
-    storeId: string;
+    magasinId: string;
+    storeId?: string;
     createdAt: Date;
   }[] = [];
 
   try {
-    products = await prisma.product.findMany({
-      where: { isActive: true, isDeleted: false },
-      orderBy: { createdAt: 'desc' },
+    const dbProducts = await prisma.produit.findMany({
+      where: { estActif: true, estSupprime: false },
+      orderBy: { creeLe: 'desc' },
       take: 6,
       select: {
         id: true,
-        name: true,
-        price: true,
-        category: true,
-        unit: true,
+        nom: true,
+        prix: true,
+        categorie: true,
+        unite: true,
         images: true,
-        storeId: true,
-        createdAt: true,
+        magasinId: true,
+        creeLe: true,
       },
     });
+    products = dbProducts.map(p => ({
+      ...p,
+      name: p.nom,
+      price: p.prix,
+      category: p.categorie,
+      unit: p.unite,
+      createdAt: p.creeLe,
+      storeId: p.magasinId
+    }));
   } catch (e) {
     console.error('TrendingProducts: fetch error (silent)', e);
   }
@@ -92,7 +102,7 @@ async function TrendingProductsSection() {
 
       {/* Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {products.map((product) => {
+        {products.map((product, index) => {
           let imgUrl = '/images/product-placeholder.svg';
           try {
             const parsed = JSON.parse(product.images || '[]');
@@ -107,9 +117,10 @@ async function TrendingProductsSection() {
               price={product.price}
               category={product.category}
               unit={product.unit || 'unité'}
-              storeId={product.storeId}
+              storeId={product.magasinId || product.storeId || ''}
               image={imgUrl}
               createdAt={product.createdAt}
+              priority={index === 0}
             />
           );
         })}
@@ -130,18 +141,26 @@ async function PopularStoresSection() {
   }[] = [];
 
   try {
-    stores = await prisma.store.findMany({
-      where: { isActive: true, isDeleted: false },
+    const dbStores = await prisma.magasin.findMany({
+      where: { estActif: true, estSupprime: false },
       take: 3,
       select: {
         id: true,
-        name: true,
+        nom: true,
         logo: true,
-        address: true,
-        district: true,
+        adresse: true,
+        quartier: true,
         description: true,
       },
     });
+    stores = dbStores.map(s => ({
+      id: s.id,
+      name: s.nom,
+      logo: s.logo,
+      address: s.adresse,
+      district: s.quartier,
+      description: s.description,
+    }));
   } catch (e) {
     console.error('PopularStores: fetch error (silent)', e);
   }

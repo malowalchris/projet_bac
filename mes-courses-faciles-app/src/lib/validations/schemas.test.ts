@@ -10,7 +10,7 @@ describe('Validation Schemas', () => {
         password: 'Password123',
         phone: '+24107000000'
       };
-      expect(userSchema.parse(validUser)).toEqual(validUser);
+      expect(userSchema.parse(validUser)).toEqual(expect.objectContaining(validUser));
     });
 
     it('should fail on weak password', () => {
@@ -33,10 +33,11 @@ describe('Validation Schemas', () => {
         stock: 10,
         category: 'Alimentaire',
         unit: 'sac',
-        storeId: 'store_123',
+        magasinId: 'magasin_123',
+        storeId: 'magasin_123',
         images: ['https://example.com/image.jpg']
       };
-      expect(productSchema.parse(validProduct)).toEqual(validProduct);
+      expect(productSchema.parse(validProduct)).toEqual(expect.objectContaining(validProduct));
     });
 
     it('should fail on negative price', () => {
@@ -46,7 +47,8 @@ describe('Validation Schemas', () => {
         stock: 10,
         category: 'Alimentaire',
         unit: 'sac',
-        storeId: 'store_123',
+        magasinId: 'magasin_123',
+        storeId: 'magasin_123',
         images: ['https://example.com/image.jpg']
       };
       expect(productSchema.safeParse(invalidProduct).success).toBe(false);

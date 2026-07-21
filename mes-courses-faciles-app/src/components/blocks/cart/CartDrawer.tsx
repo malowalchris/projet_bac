@@ -7,14 +7,26 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Minus, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 
 export function CartDrawer({ isBottomTab = false, isFloating = false }: { isBottomTab?: boolean; isFloating?: boolean }) {
   const { cart, removeFromCart, updateQuantity, totalItems, totalPrice, deliveryFee } = useCart();
+  const { user } = useAuth();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
   const prevTotalItems = useRef(totalItems);
+
+  const handleCheckoutClick = (e: React.MouseEvent) => {
+    setIsOpen(false);
+    if (!user) {
+      e.preventDefault();
+      router.push('?auth=login&callbackUrl=/checkout');
+    }
+  };
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
@@ -123,6 +135,7 @@ export function CartDrawer({ isBottomTab = false, isFloating = false }: { isBott
                       src={item.image || "/images/product-placeholder.svg"}
                       alt={item.name}
                       fill
+                      sizes="80px"
                       className="object-contain p-2 mix-blend-multiply"
                     />
                   </div>
@@ -190,7 +203,7 @@ export function CartDrawer({ isBottomTab = false, isFloating = false }: { isBott
               </div>
             </div>
 
-            <Link href="/checkout" onClick={() => setIsOpen(false)} className="block w-full">
+            <Link href="/checkout" onClick={handleCheckoutClick} className="block w-full">
               <Button size="lg" className="w-full h-14 rounded-xl bg-accent hover:bg-accent/90 text-accent-foreground text-lg shadow-xl shadow-accent/20 group">
                 Passer à la caisse
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />

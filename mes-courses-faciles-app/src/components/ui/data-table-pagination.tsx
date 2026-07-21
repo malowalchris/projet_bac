@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useTransition } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -26,6 +26,7 @@ export function DataTablePagination({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
 
   const handlePageChange = (page: number) => {
     if (onPageChange) {
@@ -33,12 +34,14 @@ export function DataTablePagination({
     } else {
       const params = new URLSearchParams(searchParams.toString());
       params.set('page', String(page));
-      router.push(`${pathname}?${params.toString()}`);
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`);
+      });
     }
   };
 
-  const canPreviousPage = currentPage > 1;
-  const canNextPage = currentPage < totalPages;
+  const canPreviousPage = currentPage > 1 && !isPending;
+  const canNextPage = currentPage < totalPages && !isPending;
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full px-6 py-4 border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-900/10">

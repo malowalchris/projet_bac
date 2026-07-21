@@ -11,38 +11,59 @@ import Loading from './loading';
 export const dynamic = 'force-dynamic';
 
 async function ProductsTableLoader() {
-  const dbProducts = await prisma.product.findMany({
-    where: { isDeleted: false },
+  const dbProducts = await prisma.produit.findMany({
+    where: { estSupprime: false },
     include: {
-      store: true
+      magasin: true
     },
     orderBy: {
-      createdAt: 'desc'
+      creeLe: 'desc'
     }
   });
 
   // Map and serialize Prisma objects into serializable ProductType instances
-  const initialProducts: ProductType[] = dbProducts.map(product => ({
+  const initialProducts: ProductType[] = dbProducts.map((product: any) => ({
     id: product.id,
-    name: product.name,
+    name: product.nom,
+    nom: product.nom,
     description: product.description,
-    price: Number(product.price), // Convert Decimal or raw value to number
-    category: product.category,
+    price: Number(product.prix), // Convert Decimal or raw value to number
+    prix: Number(product.prix),
+    category: product.categorie,
+    categorie: product.categorie,
     stock: product.stock,
-    unit: product.unit,
+    unit: product.unite || '',
+    unite: product.unite || '',
     images: product.images,
-    isActive: product.isActive,
-    storeId: product.storeId,
-    store: product.store ? {
-      id: product.store.id,
-      name: product.store.name,
-      address: product.store.address,
-      district: product.store.district,
-      phone: product.store.phone,
-      logo: product.store.logo,
-      description: product.store.description,
-      isActive: product.store.isActive
-    } : undefined
+    isActive: product.estActif,
+    estActif: product.estActif,
+    magasinId: product.magasinId,
+    storeId: product.magasinId,
+    magasin: product.magasin ? {
+      id: product.magasin.id,
+      nom: product.magasin.nom,
+      adresse: product.magasin.adresse,
+      quartier: product.magasin.quartier,
+      telephone: product.magasin.telephone,
+      logo: product.magasin.logo,
+      description: product.magasin.description,
+      estActif: product.magasin.estActif
+    } : undefined,
+    store: product.magasin ? {
+      id: product.magasin.id,
+      name: product.magasin.nom,
+      address: product.magasin.adresse,
+      district: product.magasin.quartier,
+      phone: product.magasin.telephone,
+      logo: product.magasin.logo,
+      description: product.magasin.description,
+      isActive: product.magasin.estActif,
+      nom: product.magasin.nom,
+      adresse: product.magasin.adresse,
+      quartier: product.magasin.quartier,
+      telephone: product.magasin.telephone,
+      estActif: product.magasin.estActif
+    } as any : undefined
   }));
 
   return <AdminProductsClient initialProducts={initialProducts} />;

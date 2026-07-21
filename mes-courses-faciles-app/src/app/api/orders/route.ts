@@ -30,19 +30,19 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = orderSchema.parse(body);
 
-    const order = await prisma.order.create({
+    const order = await prisma.commande.create({
       data: {
-        userId:          session.id as string,           // JWT payload — validé dans getSession()
-        storeId:         validatedData.storeId,
+        utilisateurId:   session.id as string,           // JWT payload — validé dans getSession()
+        magasinId:       validatedData.magasinId || validatedData.storeId!,
         total:           validatedData.total,
-        deliveryFee:     validatedData.deliveryFee,
-        paymentMethod:   validatedData.paymentMethod,
-        deliveryAddress: validatedData.deliveryAddress,
-        orderItems: {
-          create: validatedData.items.map((item) => ({
-            productId: item.id,
-            quantity:  item.quantity,
-            price:     item.price,
+        fraisLivraison:  validatedData.deliveryFee || validatedData.fraisLivraison,
+        methodePaiement: validatedData.paymentMethod || validatedData.methodePaiement,
+        adresseLivraison: validatedData.deliveryAddress || validatedData.adresseLivraison,
+        lignesCommande: {
+          create: (validatedData.items || validatedData.lignes || []).map((item: any) => ({
+            produitId: item.id || item.produitId,
+            quantite:  item.quantity || item.quantite,
+            prixUnitaire: item.price || item.prixUnitaire,
           })),
         },
       },
@@ -75,10 +75,10 @@ export async function GET() {
     // IDOR fix : isolation stricte par session.id
     // Un utilisateur ne peut lire QUE SES propres commandes via cette route.
     // Les admins passent par /api/admin/* qui a sa propre couche d'autorisation.
-    const orders = await prisma.order.findMany({
-      where: { userId: session.id as string },  // JWT payload — validé dans getSession()
-      include: { orderItems: true, store: true },
-      orderBy: { createdAt: 'desc' },
+    const orders = await prisma.commande.findMany({
+      where: { utilisateurId: session.id as string },  // JWT payload — validé dans getSession()
+      include: { lignesCommande: true, magasin: true },
+      orderBy: { creeLe: 'desc' },
     });
 
     return NextResponse.json(orders);

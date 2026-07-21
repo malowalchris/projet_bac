@@ -1,41 +1,56 @@
 import { NextResponse } from 'next/server';
 import { cloudinary } from '@/lib/cloudinary';
-import { verifyJWT } from '@/lib/jwt';
-import { cookies } from 'next/headers';
-
+import { requireAdminAuth, AuthError } from '@/lib/auth-guard';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('mcf_jwt_session')?.value;
-    if (!token) {
-       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-    }
-    const decoded = await verifyJWT(token);
-    if (!decoded || decoded.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    // ── 1. Contrôle d'Accès Stricte (Zero-Trust) ──────────────────
+    // Seul un administrateur authentifié peut téléverser des assets
+    try {
+      await requireAdminAuth();
+    } catch (authErr: any) {
+      const statusCode = authErr instanceof AuthError ? authErr.statusCode : 403;
+      return NextResponse.json({ error: authErr.message || 'Accès refusé' }, { status: statusCode });
     }
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const folder = formData.get('folder') as string || 'mes-courses-faciles';
+    const folder = (formData.get('folder') as string)?.trim() || 'mes-courses-faciles/products';
 
     if (!file) {
       return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 });
     }
 
+    // ── 2. Validation du Fichier et Optimisation ──────────────────
+    // A. Limitation de la taille (strictement inférieure à 5 Mo)
+    const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+    if (file.size >= MAX_SIZE_BYTES) {
+      return NextResponse.json({ error: 'La taille du fichier ne doit pas dépasser 5 Mo' }, { status: 400 });
+    }
+
+    // B. Limitation stricte des types MIME autorisés
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'Format non supporté. Seuls les formats JPEG, PNG et WebP sont acceptés' }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Nommé avec un identifiant unique (timestamp + UUID pour éviter l'écrasement)
+    // C. Encodage et normalisation sécurisés du nom du fichier
     const uniqueId = crypto.randomUUID();
     const cleanFileName = file.name
       .replace(/\.[^/.]+$/, "") // retire l'extension
-      .replace(/[^a-zA-Z0-9-_]/g, "_"); // remplace les caractères spéciaux par des underscores
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // supprime les diacritiques (accents)
+      .replace(/[^a-zA-Z0-9-_]/g, "_") // remplace les caractères spéciaux/espaces par des underscores
+      .replace(/_+/g, "_") // dédoublonne les underscores consécutifs
+      .toLowerCase()
+      .substring(0, 50); // limite la longueur à 50 caractères
     const publicId = `${cleanFileName}_${Date.now()}_${uniqueId.substring(0, 8)}`;
 
-    // Upload using stream to avoid temporary files
+    // ── 3. Traçabilité Cloudinary Complète (DAM) ──────────────────
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: folder, public_id: publicId },
@@ -47,7 +62,16 @@ export async function POST(request: Request) {
       uploadStream.end(buffer);
     });
 
-    return NextResponse.json({ url: (result as any).secure_url }, { status: 200 });
+    const res = result as any;
+
+    // Retour structuré complet pour le suivi DAM et la maintenance
+    return NextResponse.json({
+      success: true,
+      url: res.secure_url,
+      publicId: res.public_id,
+      format: res.format,
+      bytes: res.bytes
+    }, { status: 200 });
 
   } catch (error: any) {
     console.error('Upload error:', error);

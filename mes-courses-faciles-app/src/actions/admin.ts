@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { z } from "zod";
@@ -55,21 +56,30 @@ export async function getAdminProfileAction() {
   try {
     const session = await requireAdminAuth();
 
-    const admin = await prisma.user.findUnique({
+    const admin = await prisma.utilisateur.findUnique({
       where: { id: session.id },          // ← session serveur
       select: {
         id: true,
-        name: true,
+        nom: true,
         email: true,
-        phone: true,
-        address: true,
+        telephone: true,
+        adresse: true,
         role: true,
-        createdAt: true,
+        creeLe: true,
       },
     });
 
     if (!admin) return { success: false, error: "Administrateur non trouvé" };
-    return { success: true, admin };
+    return {
+      success: true,
+      admin: {
+        ...admin,
+        name: admin.nom,
+        phone: admin.telephone,
+        address: admin.adresse,
+        createdAt: admin.creeLe,
+      }
+    };
   } catch (e: unknown) {
     if (e instanceof AuthError) return { success: false, error: e.message };
     return { success: false, error: (e as Error).message };
@@ -87,7 +97,7 @@ export async function updateAdminProfileAction(data: z.infer<typeof updateProfil
     const validated = updateProfileSchema.parse(data);
 
     // Vérifier si l'email est déjà pris par un AUTRE utilisateur
-    const existing = await prisma.user.findFirst({
+    const existing = await prisma.utilisateur.findFirst({
       where: {
         email: validated.email,
         NOT: { id: session.id },           // ← session.id, jamais du client
@@ -98,23 +108,34 @@ export async function updateAdminProfileAction(data: z.infer<typeof updateProfil
       return { success: false, error: "Cet email est déjà associé à un autre compte" };
     }
 
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await prisma.utilisateur.update({
       where: { id: session.id },          // ← Zero-Trust : verrouillé sur session
       data: {
-        name:    validated.name,
-        email:   validated.email,
-        phone:   validated.phone || null,
-        address: validated.address || null,
+        nom:       validated.name,
+        email:     validated.email,
+        telephone: validated.phone || null,
+        adresse:   validated.address || null,
       },
-      select: { id: true, name: true, email: true, phone: true, address: true, role: true },
+      select: { id: true, nom: true, email: true, telephone: true, adresse: true, role: true },
     });
 
     revalidatePath("/admin/settings");
-    return { success: true, user: updatedUser };
+    return {
+      success: true,
+      user: {
+        ...updatedUser,
+        name: updatedUser.nom,
+        phone: updatedUser.telephone,
+        address: updatedUser.adresse,
+      }
+    };
   } catch (e: unknown) {
     if (e instanceof AuthError) return { success: false, error: e.message };
     if (e instanceof z.ZodError) return { success: false, error: e.issues[0].message };
-    return { success: false, error: (e as Error).message };
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return { success: false, error: "Votre session est invalide ou le compte n'existe plus. Veuillez vous déconnecter." };
+    }
+    return { success: false, error: "Une erreur est survenue lors de la mise à jour du profil" };
   }
 }
 
@@ -129,20 +150,20 @@ export async function updateAdminPasswordAction(data: z.infer<typeof updatePassw
     const validated = updatePasswordSchema.parse(data);
 
     // Récupère le hash actuel depuis la session sécurisée uniquement
-    const user = await prisma.user.findUnique({
+    const user = await prisma.utilisateur.findUnique({
       where: { id: session.id },          // ← Zero-Trust
     });
 
     if (!user) return { success: false, error: "Utilisateur introuvable" };
 
-    const match = await bcrypt.compare(validated.currentPassword, user.password);
+    const match = await bcrypt.compare(validated.currentPassword, user.motDePasse);
     if (!match) return { success: false, error: "Mot de passe actuel incorrect" };
 
     const hashedPassword = await bcrypt.hash(validated.newPassword, 10);
 
-    await prisma.user.update({
+    await prisma.utilisateur.update({
       where: { id: session.id },          // ← Zero-Trust
-      data: { password: hashedPassword },
+      data: { motDePasse: hashedPassword },
     });
 
     return { success: true };
@@ -221,9 +242,9 @@ export async function getAdminDashboardStatsAction() {
     await requireAdminAuth();
 
     const [totalOrders, totalUsers, activeStores] = await Promise.all([
-      prisma.order.count(),
-      prisma.user.count({ where: { role: "CLIENT" } }),  // Enum Prisma = CLIENT
-      prisma.store.count({ where: { isActive: true, isDeleted: false } }),
+      prisma.commande.count(),
+      prisma.utilisateur.count({ where: { role: "CLIENT" } }),  // Enum Prisma = CLIENT
+      prisma.magasin.count({ where: { estActif: true, estSupprime: false } }),
     ]);
 
     return { success: true, stats: { totalOrders, totalUsers, activeStores } };
@@ -239,7 +260,7 @@ export async function createUserAction(data: z.infer<typeof createUserSchema>) {
 
     const validated = createUserSchema.parse(data);
 
-    const existing = await prisma.user.findUnique({
+    const existing = await prisma.utilisateur.findUnique({
       where: { email: validated.email },
     });
 
@@ -249,18 +270,18 @@ export async function createUserAction(data: z.infer<typeof createUserSchema>) {
 
     const hashedPassword = await bcrypt.hash(validated.password, 10);
 
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.utilisateur.create({
       data: {
-        name:     validated.name,
-        email:    validated.email,
-        password: hashedPassword,
-        role:     validated.role,
-        isActive: true,
+        nom:        validated.name,
+        email:      validated.email,
+        motDePasse: hashedPassword,
+        role:       validated.role,
+        estActif:   true,
       },
     });
 
     revalidatePath("/admin/users");
-    return { success: true, user: { id: newUser.id, name: newUser.name, email: newUser.email } };
+    return { success: true, user: { id: newUser.id, name: newUser.nom, email: newUser.email } };
   } catch (e: unknown) {
     if (e instanceof AuthError) return { success: false, error: e.message };
     if (e instanceof z.ZodError) return { success: false, error: e.issues[0].message };
@@ -283,9 +304,9 @@ export async function updateUserStatusAction(userId: string, isActive: boolean) 
       return { success: false, error: "Vous ne pouvez pas suspendre votre propre compte" };
     }
 
-    await prisma.user.update({
+    await prisma.utilisateur.update({
       where: { id: userId },
-      data: { isActive },
+      data: { estActif: isActive },
     });
 
     revalidatePath("/admin/users");
@@ -304,7 +325,7 @@ export async function markNotificationAsReadAction(id: string) {
 
     await prisma.notification.update({
       where: { id },
-      data: { isRead: true },
+      data: { estLu: true },
     });
 
     revalidatePath("/admin");
@@ -321,8 +342,8 @@ export async function markAllNotificationsAsReadAction() {
     await requireAdminAuth();
 
     await prisma.notification.updateMany({
-      where: { isRead: false },
-      data: { isRead: true },
+      where: { estLu: false },
+      data: { estLu: true },
     });
 
     revalidatePath("/admin");
@@ -356,72 +377,91 @@ export async function fetchAdminOrdersAction(page: number = 1, limit: number = 1
     await requireAdminAuth();
 
     const [dbOrders, totalCount] = await prisma.$transaction([
-      prisma.order.findMany({
+      prisma.commande.findMany({
         include: {
-          user: {
+          utilisateur: {
             select: {
               id: true,
-              name: true,
+              nom: true,
               email: true,
-              phone: true,
-              address: true,
+              telephone: true,
+              adresse: true,
             }
           },
-          store: {
+          magasin: {
             select: {
               id: true,
-              name: true,
+              nom: true,
             }
           },
-          orderItems: {
+          lignesCommande: {
             include: {
-              product: true
+              produit: true
             }
           }
         },
         orderBy: {
-          createdAt: 'desc'
+          creeLe: 'desc'
         },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.order.count()
+      prisma.commande.count()
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 
     const formattedOrders = dbOrders.map(order => ({
       id: order.id,
-      userId: order.userId,
-      storeId: order.storeId,
+      userId: order.utilisateurId,
+      utilisateurId: order.utilisateurId,
+      magasinId: order.magasinId,
+      storeId: order.magasinId,
       total: order.total,
-      deliveryFee: order.deliveryFee,
-      status: order.status,
-      paymentMethod: order.paymentMethod,
-      deliveryAddress: order.deliveryAddress,
-      createdAt: order.createdAt.toISOString(),
-      updatedAt: order.updatedAt.toISOString(),
-      user: order.user ? {
-        id: order.user.id,
-        name: order.user.name,
-        email: order.user.email,
-        phone: order.user.phone,
-        address: order.user.address,
+      deliveryFee: order.fraisLivraison,
+      fraisLivraison: order.fraisLivraison,
+      status: order.statut,
+      statut: order.statut,
+      paymentMethod: order.methodePaiement,
+      methodePaiement: order.methodePaiement,
+      deliveryAddress: order.adresseLivraison,
+      adresseLivraison: order.adresseLivraison,
+      createdAt: order.creeLe.toISOString(),
+      updatedAt: order.misAJourLe.toISOString(),
+      user: order.utilisateur ? {
+        id: order.utilisateur.id,
+        name: order.utilisateur.nom,
+        nom: order.utilisateur.nom,
+        email: order.utilisateur.email,
+        phone: order.utilisateur.telephone,
+        telephone: order.utilisateur.telephone,
+        address: order.utilisateur.adresse,
+        adresse: order.utilisateur.adresse,
       } : null,
-      store: order.store ? {
-        id: order.store.id,
-        name: order.store.name,
+      magasin: order.magasin ? {
+        id: order.magasin.id,
+        nom: order.magasin.nom,
       } : null,
-      orderItems: order.orderItems ? order.orderItems.map(item => ({
+      store: order.magasin ? {
+        id: order.magasin.id,
+        name: order.magasin.nom,
+        nom: order.magasin.nom,
+      } as any : null,
+      orderItems: order.lignesCommande ? order.lignesCommande.map(item => ({
         id: item.id,
-        orderId: item.orderId,
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        product: item.product ? {
-          id: item.product.id,
-          name: item.product.name,
-          images: item.product.images,
+        orderId: item.commandeId,
+        commandeId: item.commandeId,
+        productId: item.produitId,
+        produitId: item.produitId,
+        quantity: item.quantite,
+        quantite: item.quantite,
+        price: item.prixUnitaire,
+        prixUnitaire: item.prixUnitaire,
+        product: item.produit ? {
+          id: item.produit.id,
+          name: item.produit.nom,
+          nom: item.produit.nom,
+          images: item.produit.images,
         } : null
       })) : []
     }));

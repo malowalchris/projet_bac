@@ -13,22 +13,22 @@ interface PromoCarouselProps {
 
 const IMAGES = [
   {
-    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop',
+    url: '/images/hero/banner-fresh.jpg',
     title: 'Fraîcheur Absolue',
-    subtitle: 'Des fruits et légumes de qualité supérieure.',
+    subtitle: 'Des fruits et légumes de qualité supérieure choisis avec soin.',
   },
   {
-    url: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&w=1200&auto=format&fit=crop',
+    url: '/images/hero/banner-supermarket.jpg',
     title: 'Supermarchés Partenaires',
     subtitle: 'Faites vos courses dans les meilleures enseignes de Libreville.',
   },
   {
-    url: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1200&auto=format&fit=crop',
+    url: '/images/hero/banner-delivery.jpg',
     title: 'Livraison Express',
-    subtitle: 'Vos achats livrés chez vous en moins de 45 minutes.',
+    subtitle: 'Vos achats livrés chez vous à Libreville en moins de 45 minutes.',
   },
   {
-    url: 'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?q=80&w=1200&auto=format&fit=crop',
+    url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80',
     title: 'Paiement Sécurisé',
     subtitle: 'Réglez simplement via Airtel Money, Moov Money ou Cash.',
   }
@@ -46,28 +46,31 @@ export function PromoCarousel({ userName }: PromoCarouselProps) {
 
   return (
     <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 dark:bg-slate-950 min-h-[480px] sm:min-h-[520px] flex items-center p-4 sm:p-8 md:p-12 border border-slate-200/60 dark:border-white/10 shadow-2xl">
-      {/* Background Image Carousel with cross-fade (Full Brightness) */}
+      {/* Background Image Carousel with cross-fade & dark overlay */}
       <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           <motion.div
             key={index}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
             className="absolute inset-0"
           >
             <Image
               src={IMAGES[index].url}
               alt={IMAGES[index].title}
               fill
-              priority
+              priority={true}
+              unoptimized={true}
               style={{ objectFit: 'cover' }}
               sizes="(max-w-7xl) 100vw, 1200px"
               className="contrast-105"
             />
           </motion.div>
         </AnimatePresence>
+        {/* Overlay d'assombrissement pour garantir la lisibilité optimale du texte et des boutons */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-900/55 to-transparent dark:from-slate-950/85 dark:via-slate-950/70 z-1 pointer-events-none" />
       </div>
 
       {/* Glassmorphism Card (Floating Container) */}

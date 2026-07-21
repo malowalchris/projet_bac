@@ -12,9 +12,10 @@ export async function POST(request: Request) {
 
     // Server-side deep validation
     const validatedData = userSchema.parse(body);
-    const { name, email, password, phone } = validatedData;
+    const passwordToHash = validatedData.motDePasse || validatedData.password || "";
+    const email = validatedData.email;
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.utilisateur.findUnique({
       where: { email },
     });
 
@@ -22,23 +23,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Cet utilisateur existe déjà.' }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(passwordToHash, 10);
 
-    const user = await prisma.user.create({
+    const user = await prisma.utilisateur.create({
       data: {
-        name,
+        nom: validatedData.nom || validatedData.name || null,
         email,
-        password: hashedPassword,
-        phone,
+        motDePasse: hashedPassword,
+        telephone: validatedData.telephone || validatedData.phone || null,
       },
     });
 
-    const { password: _password, ...userWithoutPassword } = user;
+    const { motDePasse: _password, ...userWithoutPassword } = user;
 
     const token = await signJWT({
       id: user.id,
       email: user.email,
-      name: user.name,
+      name: user.nom,
       role: user.role
     });
 
@@ -50,7 +51,13 @@ export async function POST(request: Request) {
       path: '/',
     });
 
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+    return NextResponse.json({
+      ...userWithoutPassword,
+      name: user.nom,
+      phone: user.telephone,
+      address: user.adresse,
+      createdAt: user.creeLe,
+    }, { status: 201 });
   } catch (error: any) {
     console.error('Registration error:', error);
 

@@ -12,37 +12,28 @@ export interface FavoriteProduct {
   storeId: string;
 }
 
+/**
+ * Hook useFavorites — Phase 1 (Nettoyage de l'état local LocalStorage).
+ * Toute lecture ou écriture de la clé 'mcf_favorites' dans le localStorage a été supprimée.
+ * Préparation pour la transition vers les Server Actions (fetchFavoritesAction, toggleFavoriteAction).
+ */
 export function useFavorites() {
   const [favorites, setFavorites] = useState<FavoriteProduct[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('mcf_favorites');
-      if (stored) {
-        setFavorites(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error('Failed to load favorites', e);
-    }
+    // Le stockage local ne doit plus jamais être lu (Anti-IDOR).
     setIsLoaded(true);
   }, []);
 
   const toggleFavorite = (product: FavoriteProduct) => {
     setFavorites((prev) => {
       const exists = prev.some((item) => item.id === product.id);
-      let updated;
       if (exists) {
-        updated = prev.filter((item) => item.id !== product.id);
+        return prev.filter((item) => item.id !== product.id);
       } else {
-        updated = [...prev, product];
+        return [...prev, product];
       }
-      try {
-        localStorage.setItem('mcf_favorites', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save favorites', e);
-      }
-      return updated;
     });
   };
 

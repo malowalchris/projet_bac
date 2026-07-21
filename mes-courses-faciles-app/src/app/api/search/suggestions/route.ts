@@ -13,45 +13,64 @@ export async function GET(request: NextRequest) {
     }
 
     // Search stores matching the query
-    const stores = await prisma.store.findMany({
+    const magasins = await prisma.magasin.findMany({
       where: {
-        isActive: true,
-        name: {
+        estActif: true,
+        nom: {
           contains: query,
         },
       },
       select: {
         id: true,
-        name: true,
+        nom: true,
         logo: true,
-        address: true,
+        adresse: true,
       },
       take: 3,
     });
 
+    const stores = magasins.map(m => ({
+      id: m.id,
+      name: m.nom,
+      nom: m.nom,
+      logo: m.logo,
+      address: m.adresse,
+      adresse: m.adresse,
+    }));
+
     // Search products matching the query
-    const products = await prisma.product.findMany({
+    const productsDb = await prisma.produit.findMany({
       where: {
-        isActive: true,
-        name: {
+        estActif: true,
+        estSupprime: false,
+        nom: {
           contains: query,
         },
       },
       select: {
         id: true,
-        name: true,
-        price: true,
+        nom: true,
+        prix: true,
         images: true,
-        category: true,
-        storeId: true,
-        store: {
+        categorie: true,
+        magasinId: true,
+        magasin: {
           select: {
-            name: true,
+            nom: true,
           },
         },
       },
       take: 5,
     });
+
+    const products = productsDb.map((p: any) => ({
+      ...p,
+      name: p.nom,
+      price: p.prix,
+      category: p.categorie,
+      storeId: p.magasinId,
+      store: p.magasin ? { name: p.magasin.nom, nom: p.magasin.nom } : null,
+    }));
 
     return NextResponse.json({ stores, products });
   } catch (error) {

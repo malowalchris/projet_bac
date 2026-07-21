@@ -227,6 +227,7 @@ export function CheckoutWizard({ initialUser }: CheckoutWizardProps) {
                         <Image
                           src={item.image || "/images/product-placeholder.svg"}
                           fill
+                          sizes="64px"
                           className="object-contain p-2 mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
                           alt={item.name}
                         />

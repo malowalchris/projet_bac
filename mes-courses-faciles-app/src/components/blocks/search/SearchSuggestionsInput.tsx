@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Store, ShoppingBag, Loader2, ArrowRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isAbortOrNetworkCancellationError } from '@/lib/network-resilience';
 import Image from 'next/image';
 
 interface SearchSuggestionsInputProps {
@@ -33,13 +34,14 @@ interface ProductSuggestion {
 
 export function SearchSuggestionsInput({ placeholder = "Rechercher...", className, isHero = false }: SearchSuggestionsInputProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<{ stores: StoreSuggestion[]; products: ProductSuggestion[] }>({ stores: [], products: [] });
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Debounced API fetch
+  // Debounced API fetch avec AbortController (résilience réseau)
   useEffect(() => {
     if (query.trim().length < 2) {
       setSuggestions({ stores: [], products: [] });
@@ -48,21 +50,32 @@ export function SearchSuggestionsInput({ placeholder = "Rechercher...", classNam
     }
 
     setLoading(true);
+    const controller = new AbortController();
+
     const delayDebounceFn = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`);
-        if (response.ok) {
+        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        if (response.ok && !controller.signal.aborted) {
           const data = await response.json();
           setSuggestions(data);
         }
       } catch (err) {
-        console.error("Failed to fetch search suggestions", err);
+        if (!isAbortOrNetworkCancellationError(err)) {
+          console.error("Failed to fetch search suggestions", err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }, 250);
 
-    return () => clearTimeout(delayDebounceFn);
+    return () => {
+      clearTimeout(delayDebounceFn);
+      controller.abort();
+    };
   }, [query]);
 
   // Click outside listener
@@ -81,14 +94,18 @@ export function SearchSuggestionsInput({ placeholder = "Rechercher...", classNam
     e.preventDefault();
     if (query.trim()) {
       setIsOpen(false);
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      startTransition(() => {
+        router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      });
     }
   };
 
   const handleSuggestionClick = (path: string) => {
     setIsOpen(false);
     setQuery('');
-    router.push(path);
+    startTransition(() => {
+      router.push(path);
+    });
   };
 
   const hasSuggestions = suggestions.stores.length > 0 || suggestions.products.length > 0;

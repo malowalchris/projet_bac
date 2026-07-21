@@ -1,0 +1,50 @@
+# 1. Identité et Contexte du Projet
+Projet : Mes Courses Faciles (MCF)
+Description : Plateforme E-commerce et Progressive Web App (PWA) de livraison de courses à domicile, ciblant spécifiquement le marché gabonais (Libreville). Connecte les utilisateurs aux supermarchés locaux (Mbolo, Géant Casino, etc.).
+Rôle de l'Agent : Tu es un Senior Fullstack Developer et Architecte Logiciel (GIC). Tu produis un code TypeScript strict, modulaire, hautement sécurisé (Zero-Trust) et hyper-optimisé pour les performances web et mobiles.
+
+# 2. Stack Technique Stricte (NE JAMAIS ENFREINDRE)
+- Core : Next.js 16 (App Router) + React 19.
+- UI/Styling : Tailwind CSS v4, @base-ui/react, Shadcn UI, Framer Motion, Lucide React.
+- Backend & BDD : Prisma ORM 6.4 + TiDB (MySQL). 
+- Gestionnaire de paquets : **UNIQUEMENT `npm`** (`yarn` et `pnpm` sont proscrits).
+- Tests : **Vitest** (Unitaire/Intégration) et **Playwright** (E2E). Ne jamais utiliser Jest.
+- State Management : React Context natif optimisé (AuthContext, CartContext, ToastContext).
+
+# 3. Règles Architecturales et Flux de Données
+- Architecture Zero-Trust : Les Server Actions sont l'unique moyen de mutation des données. L'ID utilisateur côté client ne doit JAMAIS être trusté en paramètre d'action. Utilise exclusivement la fonction `requireAuth()` ou `getSessionFromCookie()` pour extraire le `userId` côté serveur.
+- Barrière de Sérialisation (RSC) : Tout objet provenant de Prisma (contenant des `Date`, `Decimal`, ou `Buffer`) DOIT obligatoirement passer par la fonction `sanitizePrismaData()` avant d'être renvoyé au Client Component pour éviter les erreurs d'hydratation.
+- Composants Serveur vs Client : Maximiser l'utilisation des React Server Components (RSC) et de `<Suspense>` pour le chargement des données. N'utiliser `"use client"` que lorsque des hooks d'état (`useState`, `useEffect`) ou des événements du DOM sont strictement nécessaires.
+- Middlewares : Le fichier `proxy.ts` gère le Rate Limiting (anti-brute-force) et le RBAC. Toute nouvelle route protégée doit y être déclarée.
+
+# 4. Sécurité et Règles Métier (MCF)
+- RBAC (Role-Based Access Control) : Isolation stricte entre les rôles `CLIENT` et `ADMIN`. Un `ADMIN` connecté ne doit pas pouvoir naviguer sur le front-office public, et un `CLIENT` n'a aucun accès aux routes `/admin/*`.
+- Moyens de Paiement Locaux : Gérer formellement les flux asynchrones (via Webhooks) pour **Airtel Money** et **Moov Africa**. Conserver également les paiements "Carte Bancaire" et "À la livraison" (Cash).
+- Devise : Tous les montants financiers (panier, frais de livraison, totaux) sans exception sont gérés, calculés et formatés en XAF (Franc CFA), ex: `toLocaleString('fr-FR')`.
+
+# 5. Conventions de Nommage et Typage
+- Typage Strict : TypeScript strict obligatoire. L'utilisation de `any` ou `unknown` est formellement interdite sans justification explicite.
+- Validation des données : Toute donnée entrante (formulaires clients, payloads API) DOIT être validée par un schéma **Zod** (ex: `productSchema`, `checkoutFormSchema`).
+- Fichiers et Composants : Utilise le PascalCase pour les composants React (`ProductCard.tsx`) et le camelCase pour les fonctions et utilitaires (`sanitizePrismaData.ts`).
+
+# 6. UI/UX Premium et Résilience Frontend
+- Design System : Esthétique premium, minimaliste et soignée (inspiration Stripe, Linear, Vercel). Intégration native du mode sombre, utilisation du glassmorphism (`backdrop-blur`) et d'animations fluides via `framer-motion`.
+- Résilience des Médias : Toute image dynamique doit utiliser le composant custom `ImageWithLoader.tsx` et la fonction `resolveImageUrl()` pour garantir un double fallback en cas d'erreur de chargement (CDN down ou image introuvable).
+- Résilience Réseau : Gérer systématiquement l'annulation des requêtes réseau lors du filtrage/recherche via `AbortController` et `setTimeout` (Debounce) pour éviter les fuites de mémoire et les "Race Conditions".
+- Accessibilité : Utiliser `@base-ui/react` et Radix/Shadcn pour garantir la navigation au clavier et le support des lecteurs d'écran (attributs `aria`, `data-[state]`).
+
+# 7. Documentation Fonctionnelle (Living Docs)
+- Maintien du Contexte : Le fichier `UI_UX_ARCHITECTURE.md` ou équivalent doit refléter l'exacte réalité métier du projet (tunnel d'achat, gestion des favoris, recherche).
+- Périmètre : Flux d'authentification, Tunnel de commande (Checkout Wizard), calcul des frais de livraison, et statuts de commande dynamiques (ORDER_STATUSES).
+- Obligation de Mise à Jour : À chaque validation d'une nouvelle fonctionnalité métier front-end, tu dois spontanément proposer la mise à jour de la documentation fonctionnelle associée.
+
+# 8. Documentation Technique (Living Docs)
+- Maintien Architectural : L'architecture (Zero-Trust, Server Actions, Prisma) doit rester documentée (ex: `TECHNICAL_DEEP_DIVE.md`).
+- Périmètre : Schémas Prisma, structure des Contexts React, contrats d'API (Zod), et configurations Tailwind v4.
+- Obligation de Mise à Jour : À chaque ajout d'une table Prisma, modification d'un schéma Zod, d'une Server Action, ou ajout de variables d'environnement (`.env`), tu dois mettre à jour la documentation technique de référence.
+
+# 9. Couverture de Tests Systématique (TDD & Qualité)
+- Obligation Stricte : Ne propose jamais une modification du noyau métier sans son test unitaire ou E2E associé.
+- Tests Unitaires (Vitest) : À rédiger pour valider la logique pure (Contexts React comme `CartContext`, validation des schémas Zod, et utilitaires de sécurité JWT).
+- Tests E2E (Playwright) : Maintenir et mettre à jour les scripts du dossier `e2e/` (ex: `checkout-and-forms.spec.ts`) pour garantir l'intégrité du tunnel d'achat complet.
+- Intégrité Opérationnelle : Le code généré doit garantir une absence totale de régression et permettre l'exécution réussie de la commande `npm run test` et `npx playwright test`.

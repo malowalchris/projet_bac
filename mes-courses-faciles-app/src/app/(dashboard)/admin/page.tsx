@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card } from '@/components/ui/card';
 import { 
   TrendingUp, 
@@ -14,10 +14,25 @@ import {
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboard() {
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-8 animate-pulse">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-48 rounded-3xl" />)}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Skeleton className="h-[400px] lg:col-span-2 rounded-[2rem]" />
+        <Skeleton className="h-[400px] rounded-[2rem]" />
+      </div>
+    </div>
+  );
+}
+
+async function DashboardDataLoader() {
   // 1. Fetch KPI figures from DB with error resilience and fallback demo stats
   let totalRevenue = 0;
   let todayOrdersCount = 0;
@@ -30,32 +45,32 @@ export default async function AdminDashboard() {
 
   try {
     const [revenueResult, todayCount, clientsCount, storesCount, ordersList] = await Promise.all([
-      prisma.order.aggregate({
+      prisma.commande.aggregate({
         _sum: { total: true },
         where: {
-          status: { not: 'CANCELLED' }
+          statut: { not: 'CANCELLED' }
         }
       }),
-      prisma.order.count({
+      prisma.commande.count({
         where: {
-          createdAt: { gte: startOfToday }
+          creeLe: { gte: startOfToday }
         }
       }),
-      prisma.user.count({
+      prisma.utilisateur.count({
         where: { role: 'CLIENT' }
       }),
-      prisma.store.count({
-        where: { isActive: true }
+      prisma.magasin.count({
+        where: { estActif: true, estSupprime: false }
       }),
-      prisma.order.findMany({
+      prisma.commande.findMany({
         take: 5,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { creeLe: 'desc' },
         include: {
-          user: {
-            select: { name: true, email: true }
+          utilisateur: {
+            select: { nom: true, email: true }
           },
-          store: {
-            select: { name: true }
+          magasin: {
+            select: { nom: true }
           }
         }
       })
@@ -65,7 +80,13 @@ export default async function AdminDashboard() {
     todayOrdersCount = todayCount;
     totalClientsCount = clientsCount;
     activeStoresCount = storesCount;
-    recentOrders = ordersList;
+    recentOrders = ordersList.map((o: any) => ({
+      ...o,
+      user: { name: o.utilisateur?.nom || 'Client', email: o.utilisateur?.email },
+      store: { name: o.magasin?.nom || 'Magasin' },
+      status: o.statut,
+      createdAt: o.creeLe,
+    }));
   } catch (err) {
     console.error("Failed to fetch dashboard DB data:", err);
   }
@@ -147,13 +168,7 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-8 animate-in duration-300 overflow-y-auto h-full pr-2 pb-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Vue d&apos;ensemble</h1>
-        <p className="text-slate-550 dark:text-slate-400 font-medium">Bienvenue Jules, voici les performances de votre plateforme aujourd&apos;hui.</p>
-      </div>
-
+    <>
       {/* Bento Grid KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpis.map((kpi) => (
@@ -228,7 +243,7 @@ export default async function AdminDashboard() {
                         <p className="text-[10px] text-slate-400 dark:text-slate-500">{order.user?.email}</p>
                       </div>
                     </td>
-                    <td className="py-4 text-slate-550 dark:text-slate-400 font-medium">{order.store?.name}</td>
+                    <td className="py-4 text-slate-550 dark:text-slate-400 font-medium">{(order as any).magasin?.nom || (order as any).store?.name}</td>
                     <td className="py-4 font-black text-brand-secondary dark:text-white">
                       {order.total.toLocaleString('fr-FR')} CFA
                     </td>
@@ -269,6 +284,23 @@ export default async function AdminDashboard() {
           </div>
         </Card>
       </div>
+    </>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <div className="space-y-8 animate-in duration-300 overflow-y-auto h-full pr-2 pb-6">
+      {/* Header affiché immédiatement en 0ms */}
+      <div>
+        <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Vue d&apos;ensemble</h1>
+        <p className="text-slate-550 dark:text-slate-400 font-medium">Bienvenue Jules, voici les performances de votre plateforme aujourd&apos;hui.</p>
+      </div>
+
+      {/* Données chargées en arrière-plan avec Suspense non-bloquant */}
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardDataLoader />
+      </Suspense>
     </div>
   );
 }

@@ -19,13 +19,13 @@ export default async function CheckoutPage() {
     redirect('/?auth=login&callbackUrl=/checkout');
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.utilisateur.findUnique({
     where: { id: decoded.id },
     select: {
       id: true,
-      name: true,
-      phone: true,
-      address: true,
+      nom: true,
+      telephone: true,
+      adresse: true,
     }
   });
 
@@ -33,5 +33,10 @@ export default async function CheckoutPage() {
     redirect('/?auth=login&callbackUrl=/checkout');
   }
 
-  return <CheckoutWizard initialUser={user} />;
+  return <CheckoutWizard initialUser={{
+    id: user.id,
+    name: user.nom,
+    phone: user.telephone,
+    address: user.adresse
+  }} />;
 }

@@ -60,7 +60,7 @@ export function CheckoutClientForm({ initialUser }: CheckoutClientFormProps) {
     watch,
     formState: { errors, isValid }
   } = useForm<CheckoutFormData>({
-    resolver: zodResolver(checkoutFormSchema),
+    resolver: zodResolver(checkoutFormSchema as any),
     mode: "onChange",
     defaultValues: {
       name: initialUser.name || '',
@@ -85,22 +85,38 @@ export function CheckoutClientForm({ initialUser }: CheckoutClientFormProps) {
     );
   }
 
-  const onSubmit = async (data: CheckoutFormData) => {
+  const onSubmit = async (data: any) => {
     if (cart.length === 0) return;
     setLoading(true);
 
     try {
       const orderPayload = {
-        userId: initialUser.id,
+        userId: initialUser?.id || 'anonymous',
+        utilisateurId: initialUser?.id || 'anonymous',
         storeId: cart[0].storeId!,
+        magasinId: cart[0].storeId || (cart[0] as any).magasinId!,
         total: finalTotal,
         deliveryFee: deliveryFee,
+        fraisLivraison: deliveryFee,
         paymentMethod: data.paymentMethod,
+        methodePaiement: data.paymentMethod,
         deliveryAddress: `${data.name} - ${data.phone} - ${data.district} ${data.indications ? `(${data.indications})` : ''}`,
+        adresseLivraison: `${data.name} - ${data.phone} - ${data.district} ${data.indications ? `(${data.indications})` : ''}`,
         items: cart.map(item => ({
           id: item.id,
+          produitId: item.id,
           quantity: item.quantity,
-          price: item.price
+          quantite: item.quantity,
+          price: item.price,
+          prixUnitaire: item.price
+        })),
+        lignes: cart.map(item => ({
+          id: item.id,
+          produitId: item.id,
+          quantity: item.quantity,
+          quantite: item.quantity,
+          price: item.price,
+          prixUnitaire: item.price
         }))
       };
 
@@ -111,6 +127,7 @@ export function CheckoutClientForm({ initialUser }: CheckoutClientFormProps) {
         setIsSuccess(true);
         clearCart();
         window.scrollTo(0, 0);
+        router.push(`/checkout/success?orderId=${res.id!}`);
       } else {
         toast.error(res.error || 'Erreur lors de la commande');
       }
@@ -285,6 +302,7 @@ export function CheckoutClientForm({ initialUser }: CheckoutClientFormProps) {
                         <Image
                           src={item.image || "/images/product-placeholder.svg"}
                           fill
+                          sizes="64px"
                           className="object-contain p-2 mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
                           alt={item.name}
                         />

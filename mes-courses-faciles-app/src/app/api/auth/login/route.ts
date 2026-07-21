@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const validatedData = loginSchema.parse(body);
     const { email, password } = validatedData;
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.utilisateur.findUnique({
       where: { email },
     });
 
@@ -20,22 +20,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.motDePasse);
 
     if (!passwordMatch) {
       return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
     }
 
-    if (!user.isActive) {
+    if (!user.estActif) {
       return NextResponse.json({ error: 'Votre compte a été suspendu par un administrateur.' }, { status: 403 });
     }
 
-    const { password: _password, ...userWithoutPassword } = user;
+    const { motDePasse: _password, ...userWithoutPassword } = user;
 
     const token = await signJWT({
       id: user.id,
       email: user.email,
-      name: user.name,
+      name: user.nom,
       role: user.role
     });
 
@@ -47,7 +47,13 @@ export async function POST(request: Request) {
       path: '/',
     });
 
-    return NextResponse.json(userWithoutPassword, { status: 200 });
+    return NextResponse.json({
+      ...userWithoutPassword,
+      name: user.nom,
+      phone: user.telephone,
+      address: user.adresse,
+      createdAt: user.creeLe,
+    }, { status: 200 });
   } catch (error: any) {
     console.error('Login error:', error);
 

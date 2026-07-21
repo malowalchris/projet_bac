@@ -6,12 +6,12 @@ import { StoreDetailContent } from '@/components/blocks/stores/StoreDetailConten
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const store = await prisma.store.findUnique({
+  const store = await prisma.magasin.findUnique({
     where: { id },
-    select: { name: true, description: true, isActive: true, isDeleted: true }
+    select: { nom: true, description: true, estActif: true, estSupprime: true }
   });
   return {
-    title: store && store.isActive && !store.isDeleted ? `${store.name} | Mes Courses Faciles` : 'Magasin | Mes Courses Faciles',
+    title: store && store.estActif && !store.estSupprime ? `${store.nom} | Mes Courses Faciles` : 'Magasin | Mes Courses Faciles',
     description: store?.description || 'Découvrez nos magasins partenaires sur Mes Courses Faciles.',
   };
 }
@@ -24,24 +24,33 @@ export default async function StorePage({
   const resolvedParams = await params;
 
   // Get Store from DB
-  const store = await prisma.store.findUnique({
+  const dbStore = await prisma.magasin.findUnique({
     where: { id: resolvedParams.id },
     select: {
       id: true,
-      name: true,
-      address: true,
-      district: true,
-      phone: true,
+      nom: true,
+      adresse: true,
+      quartier: true,
+      telephone: true,
       logo: true,
       description: true,
-      isActive: true,
-      isDeleted: true,
+      estActif: true,
+      estSupprime: true,
     }
   });
 
-  if (!store || !store.isActive || store.isDeleted) {
+  if (!dbStore || !dbStore.estActif || dbStore.estSupprime) {
     notFound();
   }
+
+  const store = {
+    ...dbStore,
+    name: dbStore.nom,
+    address: dbStore.adresse,
+    district: dbStore.quartier,
+    phone: dbStore.telephone,
+    isActive: dbStore.estActif,
+  } as any;
 
   return <StoreDetailContent store={store} />;
 }

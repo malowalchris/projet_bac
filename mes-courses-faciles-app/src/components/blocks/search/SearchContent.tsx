@@ -12,6 +12,7 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { PageLayout } from '@/components/common/PageLayout';
 import type { Product as ProductType } from '@/types';
 import { CATEGORIES as CENTRAL_CATEGORIES } from '@/lib/constants/categories';
+import { isAbortOrNetworkCancellationError } from '@/lib/network-resilience';
 
 const RECENT_SEARCHES = ['Riz 5kg', 'Lait', 'Huile', 'Savon'];
 
@@ -90,10 +91,18 @@ export function SearchContent({ discoverySlot }: SearchContentProps) {
   }, [initialCategory]);
 
   useEffect(() => {
-    fetch('/api/stores')
+    const controller = new AbortController();
+    fetch('/api/stores', { signal: controller.signal })
       .then(res => res.json())
-      .then(data => setStores(data))
-      .catch(err => console.error("Error loading stores in search:", err));
+      .then(data => {
+        if (!controller.signal.aborted) setStores(data);
+      })
+      .catch(err => {
+        if (!isAbortOrNetworkCancellationError(err)) {
+          console.error("Error loading stores in search:", err);
+        }
+      });
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -106,11 +115,17 @@ export function SearchContent({ discoverySlot }: SearchContentProps) {
           signal: controller.signal,
         });
         const data = await res.json();
-        setResults(Array.isArray(data) ? data : []);
+        if (!controller.signal.aborted) {
+          setResults(Array.isArray(data) ? data : []);
+        }
       } catch (e: unknown) {
-        if (e instanceof Error && e.name !== 'AbortError') console.error(e);
+        if (!isAbortOrNetworkCancellationError(e)) {
+          console.error(e);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     // Debounce 300ms
@@ -355,7 +370,7 @@ export function SearchContent({ discoverySlot }: SearchContentProps) {
             ) : paginatedResults.length > 0 ? (
               <div className="space-y-10">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-                  {paginatedResults.map((p: any) => {
+                  {paginatedResults.map((p: any, index: number) => {
                     let imgUrl = '/images/product-placeholder.svg';
                     try {
                       const imgs = JSON.parse(p.images || '[]');
@@ -373,6 +388,7 @@ export function SearchContent({ discoverySlot }: SearchContentProps) {
                         storeId={p.storeId}
                         image={imgUrl}
                         storeName={p.store?.name}
+                        priority={index === 0}
                       />
                     );
                   })}

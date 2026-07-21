@@ -14,6 +14,7 @@ import { PageLayout } from '@/components/common/PageLayout';
 import { BackButton } from '@/components/common/BackButton';
 import type { Store as StoreType, Product as ProductType } from '@/types';
 import { CATEGORIES as CENTRAL_CATEGORIES } from '@/lib/constants/categories';
+import { isAbortOrNetworkCancellationError } from '@/lib/network-resilience';
 
 const CATEGORIES = Object.keys(CENTRAL_CATEGORIES).filter(c => c !== 'Divers');
 
@@ -76,11 +77,17 @@ export function StoreDetailContent({ store }: StoreDetailContentProps) {
           signal: controller.signal,
         });
         const data = await res.json();
-        setResults(Array.isArray(data) ? data : []);
+        if (!controller.signal.aborted) {
+          setResults(Array.isArray(data) ? data : []);
+        }
       } catch (e: unknown) {
-        if (e instanceof Error && e.name !== 'AbortError') console.error(e);
+        if (!isAbortOrNetworkCancellationError(e)) {
+          console.error(e);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     
@@ -174,7 +181,7 @@ export function StoreDetailContent({ store }: StoreDetailContentProps) {
           <nav className="flex items-center gap-1 text-xs text-slate-500 font-bold">
             <span>Magasins</span>
             <ChevronRight size={12} />
-            <span className="text-brand-primary uppercase truncate max-w-[200px]">{store.name}</span>
+            <span className="text-brand-primary uppercase truncate max-w-[200px]">{store.nom || store.name}</span>
           </nav>
         </div>
 
@@ -186,15 +193,16 @@ export function StoreDetailContent({ store }: StoreDetailContentProps) {
             <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-200 dark:border-white/5 overflow-hidden relative flex-shrink-0">
               <Image
                 src={storeLogo}
-                alt={store.name}
+                alt={store.nom || store.name || 'Magasin'}
                 fill
+                sizes="80px"
                 className="object-cover"
               />
             </div>
 
             {/* Text Information */}
             <div className="flex flex-col gap-2">
-              <h1 className="text-2xl font-black text-slate-800 dark:text-white capitalize">{store.name}</h1>
+              <h1 className="text-2xl font-black text-slate-800 dark:text-white capitalize">{store.nom || store.name}</h1>
               {store.description && (
                 <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl font-semibold leading-snug">{store.description}</p>
               )}
@@ -202,11 +210,11 @@ export function StoreDetailContent({ store }: StoreDetailContentProps) {
               <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
                 <span className="flex items-center gap-1 font-bold">
                   <MapPin size={14} className="text-brand-primary" />
-                  {store.district}, Libreville ({store.address})
+                  {store.quartier || store.district}, Libreville ({store.adresse || store.address})
                 </span>
                 <span className="flex items-center gap-1 font-bold">
                   <Phone size={14} className="text-brand-safran" />
-                  Tél : {store.phone}
+                  Tél : {store.telephone || store.phone}
                 </span>
               </div>
             </div>
@@ -318,7 +326,7 @@ export function StoreDetailContent({ store }: StoreDetailContentProps) {
               ) : paginatedResults.length > 0 ? (
                 <div className="space-y-10">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-                    {paginatedResults.map((p) => {
+                    {paginatedResults.map((p, index) => {
                       let imgUrl = '/images/product-placeholder.svg';
                       try {
                         const imgs = JSON.parse(p.images || '[]');
@@ -333,8 +341,9 @@ export function StoreDetailContent({ store }: StoreDetailContentProps) {
                           price={p.price}
                           category={p.category}
                           unit={p.unit || 'unité'}
-                          storeId={p.storeId}
+                          storeId={p.magasinId || p.storeId || store.id}
                           image={imgUrl}
+                          priority={index === 0}
                         />
                       );
                     })}

@@ -16,8 +16,8 @@ export const BottomTabBar = () => {
     { icon: Home, label: 'Accueil', href: '/' },
     { icon: Search, label: 'Chercher', href: '/search' },
     { icon: ShoppingBag, label: 'Panier', href: '#', isCart: true },
-    { icon: Heart, label: 'Favoris', href: isAuthenticated ? '/favorites' : '?auth=login' },
-    { icon: User, label: 'Profil', href: isAuthenticated ? (user?.role === 'ADMIN' ? '/admin/settings' : '/profile') : '?auth=login' },
+    { icon: Heart, label: 'Favoris', href: isAuthenticated ? '/favorites' : '?auth=login&callbackUrl=/favorites' },
+    { icon: User, label: 'Profil', href: isAuthenticated ? (user?.role === 'ADMIN' ? '/admin/settings' : '/profile') : '?auth=login&callbackUrl=' + encodeURIComponent(user?.role === 'ADMIN' ? '/admin/settings' : '/profile') },
   ];
 
   return (

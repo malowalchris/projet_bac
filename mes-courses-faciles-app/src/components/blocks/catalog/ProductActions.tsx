@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Minus, Plus, Heart, Check } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Check } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useFavorites } from '@/hooks/useFavorites';
+import { FavoriteButton } from '@/components/blocks/catalog/FavoriteButton';
 
 interface ProductActionsProps {
   id: string;
@@ -22,39 +22,19 @@ interface ProductActionsProps {
 export function ProductActions({ id, name, price, category, unit, images, storeId }: ProductActionsProps) {
   const { addToCart } = useCart();
   const { user } = useAuth();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const router = useRouter();
   const pathname = usePathname();
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
 
-  const isFav = isFavorite(id);
-
-  const handleToggleFavorite = () => {
-    if (!user) {
-      router.push(`?auth=login&callbackUrl=${encodeURIComponent(pathname)}`);
-      return;
+  const firstImage = (() => {
+    try {
+      const parsed = JSON.parse(images || '[]');
+      return parsed[0] || '';
+    } catch {
+      return images || '';
     }
-
-    const firstImage = (() => {
-      try {
-        const parsed = JSON.parse(images || '[]');
-        return parsed[0] || '';
-      } catch {
-        return images || '';
-      }
-    })();
-
-    toggleFavorite({
-      id,
-      name,
-      price,
-      category,
-      unit: unit || 'unité',
-      image: firstImage,
-      storeId,
-    });
-  };
+  })();
 
   const handleAddToCart = () => {
     if (!user) {
@@ -128,15 +108,19 @@ export function ProductActions({ id, name, price, category, unit, images, storeI
           </>
         )}
       </Button>
-      <Button
-        onClick={handleToggleFavorite}
-        variant="outline"
-        size="icon"
-        className="h-14 w-14 rounded-2xl border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-red-500 transition-all flex-shrink-0 cursor-pointer"
-        aria-label="Ajouter aux favoris"
-      >
-        <Heart className={cn("h-6 w-6 transition-all duration-300", isFav ? "fill-red-500 text-red-500 scale-110" : "text-slate-500")} />
-      </Button>
+      <FavoriteButton
+        product={{
+          id,
+          name,
+          price,
+          category,
+          unit: unit || 'unité',
+          image: firstImage,
+          storeId,
+        }}
+        size={24}
+        className="h-14 w-14 rounded-2xl border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all flex-shrink-0 cursor-pointer relative top-auto left-auto shadow-none bg-transparent"
+      />
     </div>
   );
 }

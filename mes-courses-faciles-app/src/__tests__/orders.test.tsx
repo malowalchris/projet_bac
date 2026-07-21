@@ -9,6 +9,10 @@ const { mockNextResponse, prismaMock } = vi.hoisted(() => ({
     }))
   },
   prismaMock: {
+    commande: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
     order: {
       create: vi.fn(),
       findMany: vi.fn(),
@@ -23,6 +27,16 @@ vi.mock('next/server', () => ({
 vi.mock('@/lib/prisma', () => ({
   __esModule: true,
   default: prismaMock,
+}));
+
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(async () => ({
+    get: vi.fn((key) => key === 'mcf_jwt_session' ? { value: 'fake-token' } : undefined)
+  }))
+}));
+
+vi.mock('@/lib/jwt', () => ({
+  verifyJWT: vi.fn(async (token) => token === 'fake-token' ? { id: 'user1', email: 'test@example.com' } : null)
 }));
 
 // Import the route handler
@@ -45,14 +59,14 @@ describe('Orders API', () => {
       body: JSON.stringify(orderData)
     });
 
-    prismaMock.order.create.mockResolvedValue({ id: 'order_abc', ...orderData });
+    prismaMock.commande.create.mockResolvedValue({ id: 'order_abc', ...orderData });
 
     const response = await POST(request);
     expect(response.status).toBe(201);
 
     const data = await response.json();
     expect(data.id).toBe('order_abc');
-    expect(prismaMock.order.create).toHaveBeenCalled();
+    expect(prismaMock.commande.create).toHaveBeenCalled();
   });
 
   it('should return 500 on database error', async () => {
@@ -71,7 +85,7 @@ describe('Orders API', () => {
       body: JSON.stringify(orderData)
     });
 
-    prismaMock.order.create.mockRejectedValue(new Error('DB Error'));
+    prismaMock.commande.create.mockRejectedValue(new Error('DB Error'));
 
     const response = await POST(request);
     expect(response.status).toBe(500);

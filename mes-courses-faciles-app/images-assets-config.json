@@ -2,401 +2,401 @@
   "stores": {
     "Mbolo Supermarché": {
       "prompt": "Devanture moderne d'un supermarché de prestige, vitrines larges et lumineuses, rayonnages de fruits et légumes frais visibles en arrière-plan, éclairage chaud naturel, bokeh subtil, 8k",
-      "url": "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Mbolo_Supermarché/800/800"
     },
     "Géant Casino": {
       "prompt": "Intérieur chaleureux d'une épicerie fine haut de gamme avec des produits frais colorés, des paniers en osier, éclairage tamisé naturel, perspective soignée, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Géant_Casino/800/800"
     },
     "Prix Import": {
       "prompt": "Rayonnages modernes d'un grand supermarché rempli de produits alimentaires et d'épicerie, caddies de course, éclairage intérieur soigné, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Prix_Import/800/800"
     },
     "San Gel": {
       "prompt": "Section de produits surgelés et frais dans un supermarché, vitrines réfrigérées lumineuses, ambiance propre et moderne, 8k",
-      "url": "https://images.unsplash.com/photo-1583258292688-d0213df4a3a8?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/San_Gel/800/800"
     },
     "Hygiène & Beauté MCF": {
       "prompt": "Rayon cosmétique et hygiène dans une grande enseigne, flacons de savon, shampoing, soins disposés de façon esthétique, éclairage doux, 8k",
-      "url": "https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Hygiène___Beauté_MCF/800/800"
     },
     "Marché de Louis": {
       "prompt": "Boutique d'épicerie fine typique avec paniers de légumes frais devant la boutique, ambiance de marché local à Libreville, 8k",
-      "url": "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Marché_de_Louis/800/800"
     },
     "Bébé & Maman Libreville": {
       "prompt": "Boutique colorée pour bébés avec peluches, paquets de couches et accessoires d'allaitement sur des étagères blanches en bois, ambiance chaleureuse, 8k",
-      "url": "https://images.unsplash.com/photo-1515488042361-404e9250afef?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Bébé___Maman_Librevi/800/800"
     },
     "Supergros Grossiste": {
       "prompt": "Entrepôt de distribution alimentaire avec palettes de sacs de riz, cartons empilés, chariot élévateur en arrière-plan, perspective industrielle propre, 8k",
-      "url": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Supergros_Grossiste/800/800"
     },
     "Boulangerie Pâtisserie MCF": {
       "prompt": "Vitrine de boulangerie artisanale présentant des baguettes dorées, des croissants frais et des pâtisseries fines, éclairage chaud gourmand, 8k",
-      "url": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Boulangerie_Pâtisser/800/800"
     },
     "Clean Gabon": {
       "prompt": "Rayonnage propre présentant une large gamme de produits de nettoyage et d'entretien, bouteilles de lessive, pulvérisateurs et éponges colorées, 8k",
-      "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Clean_Gabon/800/800"
     }
   },
   "products": {
     "Couches Bébé Taille 4 (x50)": {
       "prompt": "Paquet de couches pour bébés blanches empilées à côté d'un doudou en peluche sur un drap doux, tons pastel doux, 8k",
-      "url": "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Couches_Bébé_Taille_/800/800"
     },
     "Lait 1er Âge Poudre 800g": {
       "prompt": "Boîte métallique de lait infantile en poudre avec un biberon préparé à côté sur une table en bois, 8k",
-      "url": "https://images.unsplash.com/photo-1550572017-edd951b55104?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lait_1er_Âge_Poudre_/800/800"
     },
     "Lingettes Bébé Sensitives (x80)": {
       "prompt": "Paquet de lingettes pour bébé ouvert, une lingette blanche tirée, sur fond de chambre d'enfant floue, 8k",
-      "url": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lingettes_Bébé_Sensi/800/800"
     },
     "Lessive Liquide Machine 3L": {
       "prompt": "Grand bidon bleu de lessive liquide posé à côté d'une pile de linge frais plié, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1610555356070-d0efb6505f21?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lessive_Liquide_Mach/800/800"
     },
     "Liquide Vaisselle Citron 1L": {
       "prompt": "Bouteille de liquide vaisselle jaune au citron posée au bord d'un évier propre et étincelant, reflets de lumière, 8k",
-      "url": "https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Liquide_Vaisselle_Ci/800/800"
     },
     "Eau de Javel 2L": {
       "prompt": "Bouteille blanche d'eau de javel désinfectante avec gants de ménage en caoutchouc jaune à côté, fond de carrelage blanc propre, 8k",
-      "url": "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Eau_de_Javel_2L/800/800"
     },
     "Soda Coca-Cola 1.5L": {
       "prompt": "Bouteille de Coca-Cola classique glacée et pétillante avec des gouttes de condensation, fond rouge dynamique flou, 8k",
-      "url": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Soda_Coca_Cola_1_5L/800/800"
     },
     "Bière Régab (canette 33cl)": {
       "prompt": "Canette de bière locale posée sur une table en verre de bar, gouttes de condensation glacée, fond flou, 8k",
-      "url": "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Bière_Régab__canette/800/800"
     },
     "Riz Parfumé Premium 5kg": {
       "prompt": "Sac en toile de riz blanc parfumé, quelques grains de riz bruts éparpillés sur une table en bois rustique, éclairage naturel doux, 8k",
-      "url": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Riz_Parfumé_Premium_/800/800"
     },
     "Huile de Tournesol 1L": {
       "prompt": "Bouteille en verre d'huile de tournesol dorée et translucide, fleur de tournesol en arrière-plan, éclairage rétroéclairé chaud, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Huile_de_Tournesol_1/800/800"
     },
     "Lait Demi-Écrémé UHT 1L": {
       "prompt": "Brique de lait épurée posée sur une table de petit déjeuner, verre de lait frais à côté, fond de cuisine lumineuse flouté, 8k",
-      "url": "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lait_Demi_Écrémé_UHT/800/800"
     },
     "Spaghetti blé dur 500g": {
       "prompt": "Faisceau de spaghettis crus liés par une ficelle sur un plan de travail en ardoise, tomates cerises et basilic frais à côté, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Spaghetti_blé_dur_50/800/800"
     },
     "Café Arabica Pur 250g": {
       "prompt": "Grains de café torréfiés noirs et brillants débordant d'une tasse en céramique sombre, fumée légère s'élevant, fond de bois brut, éclairage chaud, 8k",
-      "url": "https://images.unsplash.com/photo-1507133750040-4a8f57021571?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Café_Arabica_Pur_250/800/800"
     },
     "Thé Vert Menthe (25 s.)": {
       "prompt": "Tasse de thé vert transparente fumante avec feuilles de menthe fraîches à côté, lumière tamisée du matin, fond épuré, 8k",
-      "url": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Thé_Vert_Menthe__25_/800/800"
     },
     "Farine de Blé T55 1kg": {
       "prompt": "Sac en papier kraft de farine blanche ouvert avec une cuillère en bois, poussière de farine délicate dans l'air, éclairage naturel doux, 8k",
-      "url": "https://images.unsplash.com/photo-1574085733277-851d9d856a3a?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Farine_de_Blé_T55_1k/800/800"
     },
     "Sucre Blanc Morceaux 1kg": {
       "prompt": "Morceaux de sucre blanc empilés de manière géométrique sur une surface réfléchissante sombre, éclairage latéral contrasté, bokeh prononcé, 8k",
-      "url": "https://images.unsplash.com/photo-1581781890001-c529dc1d9165?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Sucre_Blanc_Morceaux/800/800"
     },
     "Beurre Doux 250g": {
       "prompt": "Plaquette de beurre doux sur un beurrier en verre, couteau étalant une noisette de beurre sur du pain frais, lumière dorée matinale, 8k",
-      "url": "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Beurre_Doux_250g/800/800"
     },
     "Confiture de Fraise 370g": {
       "prompt": "Pot en verre de confiture de fraise avec fruits entiers, pot ouvert avec cuillère en bois, fraises fraîches éparpillées à côté, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1590412200988-a436bb705300?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Confiture_de_Fraise_/800/800"
     },
     "Jus d'Orange Pur 1L": {
       "prompt": "Verre de jus d'orange frais pressé et givré, quartier d'orange sur le bord, fond de verger flouté ensoleillé, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Jus_d_Orange_Pur_1L/800/800"
     },
     "Eau Minérale Locale 1.5L": {
       "prompt": "Bouteille d'eau minérale fraîche avec gouttelettes de condensation posée sur une roche humide, source d'eau naturelle en arrière-plan flou, 8k",
-      "url": "https://images.unsplash.com/photo-1608889175123-8ec330b86f84?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Eau_Minérale_Locale_/800/800"
     },
     "Chips Artisanales Salées": {
       "prompt": "Bol de chips de pommes de terre dorées et croustillantes avec des cristaux de sel marin visibles, fond neutre gris mat, éclairage contrasté, 8k",
-      "url": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Chips_Artisanales_Sa/800/800"
     },
     "Chocolat Noir 70% 100g": {
       "prompt": "Carrés de chocolat noir intense empilés, fèves de cacao et poudre de cacao éparpillées autour, éclairage chaud chaleureux, bokeh prononcé, 8k",
-      "url": "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Chocolat_Noir_70__10/800/800"
     },
     "Sardines Pimentées (boîte)": {
       "prompt": "Boîte de conserve de sardines à l'huile d'olive ouverte, tranches de piment rouge à côté, fond de cuisine en bois, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Sardines_Pimentées__/800/800"
     },
     "Poulet Surgelé Entier 1.3kg": {
       "prompt": "Photographie culinaire d'un poulet rôti doré et juteux sur un plat en céramique avec herbes fraîches (thym, romarin), fond de table en fête, 8k",
-      "url": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Poulet_Surgelé_Entie/800/800"
     },
     "Œufs Frais du Gabon (x30)": {
       "prompt": "Pannier d'œufs frais de poule bruns disposés sur de la paille sèche, ambiance rustique de ferme, éclairage naturel doux du matin, 8k",
-      "url": "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Œufs_Frais_du_Gabon_/800/800"
     },
     "Sel Fin de Table 1kg": {
       "prompt": "Tas de sel marin fin blanc avec une cuillère en bois posée à côté sur un fond d'ardoise noire, éclairage latéral contrasté, 8k",
-      "url": "https://images.unsplash.com/photo-1594911774802-8822a707cbb3?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Sel_Fin_de_Table_1kg/800/800"
     },
     "Biscuits Sablés Beurre": {
       "prompt": "Biscuits sablés dorés empilés sur une assiette en porcelaine à côté d'une tasse de lait, fond de cuisine chaleureuse flouté, 8k",
-      "url": "https://images.unsplash.com/photo-1558961317-a92c190a6042?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Biscuits_Sablés_Beur/800/800"
     },
     "Yaourts aux Fruits (x4)": {
       "prompt": "Pot de yaourt crémeux ouvert avec des fruits rouges frais (framboises, myrtilles) sur le dessus, fond clair et épuré, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Yaourts_aux_Fruits__/800/800"
     },
     "Smart TV LED 43\" 4K": {
       "prompt": "Téléviseur intelligent écran plat 4K affichant une superbe image de nature, monté sur un mur de salon moderne, meuble en bois clair, éclairage LED, 8k",
-      "url": "https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Smart_TV_LED_43__4K/800/800"
     },
     "Smartphone Pro 128Go": {
       "prompt": "Smartphone haut de gamme élégant posé sur une plaque de marbre blanc, écran éteint reflétant un éclairage studio doux, bokeh prononcé, 8k",
-      "url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Smartphone_Pro_128Go/800/800"
     },
     "Écouteurs Sans Fil Pro": {
       "prompt": "Écouteurs intra-auriculaires sans fil modernes reposant dans leur boîtier de charge ouvert, sur un fond texturé gris anthracite, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Écouteurs_Sans_Fil_P/800/800"
     },
     "Enceinte Bluetooth Étanche": {
       "prompt": "Enceinte sans fil cylindrique étanche posée près d'une piscine avec des gouttes d'eau à la surface, fond ensoleillé flou, bokeh, 8k",
-      "url": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Enceinte_Bluetooth_É/800/800"
     },
     "Batterie Externe 20k mAh": {
       "prompt": "Batterie de secours USB compacte et robuste en aluminium anodisé mat, câblée à un téléphone en charge, fond de bureau minimaliste, 8k",
-      "url": "https://images.unsplash.com/photo-1609592424109-dd9892f1b17c?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Batterie_Externe_20k/800/800"
     },
     "Souris Optique Sans Fil": {
       "prompt": "Souris d'ordinateur ergonomique sans fil noire mate posée sur un tapis de souris en feutre gris, éclairage de bureau tamisé, 8k",
-      "url": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Souris_Optique_Sans_/800/800"
     },
     "Clavier Gaming Rétroéclairé": {
       "prompt": "Clavier mécanique gaming de près avec touches rétroéclairées RGB colorées, ambiance nocturne, flou artistique en arrière-plan, 8k",
-      "url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Clavier_Gaming_Rétro/800/800"
     },
     "Chargeur Mural 20W Rapide": {
       "prompt": "Bloc de charge secteur blanc épuré double port USB avec logo gravé, posé sur une surface blanche mate, éclairage studio doux, 8k",
-      "url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Chargeur_Mural_20W_R/800/800"
     },
     "Câble USB-C Tressé 2m": {
       "prompt": "Câble USB-C tressé noir enroulé proprement, connecteur en métal brillant, posé sur une surface sombre en fibre de carbone, éclairage contrasté, 8k",
-      "url": "https://images.unsplash.com/photo-1619472381216-1f618a8b13d2?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Câble_USB_C_Tressé_2/800/800"
     },
     "Clé USB 3.0 de 64Go": {
       "prompt": "Clé USB en métal brossé posée sur un bureau en bois sombre à côté d'un ordinateur portable, éclairage naturel, profondeur de champ, 8k",
-      "url": "https://images.unsplash.com/photo-1622760822453-87be33dc9be0?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Clé_USB_3_0_de_64Go/800/800"
     },
     "Blender Mixeur Pro 1.5L": {
       "prompt": "Blender en inox de cuisine moderne, bol en verre rempli d'un smoothie aux fruits rouges, fruits frais disposés autour, éclairage lumineux, 8k",
-      "url": "https://images.unsplash.com/photo-1570197571499-166b36435e9f?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Blender_Mixeur_Pro_1/800/800"
     },
     "Bouilloire Électrique Inox": {
       "prompt": "Bouilloire électrique moderne en acier inoxydable brillant sur son socle de charge, vapeur s'échappant doucement, fond de cuisine en bois, 8k",
-      "url": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Bouilloire_Électriqu/800/800"
     },
     "Machine à Café Filtre": {
       "prompt": "Machine à café filtre noire et inox en train de faire couler du café chaud dans sa verseuse en verre, grains de café éparpillés, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1517256064527-09c53b2d0bc6?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Machine_à_Café_Filtr/800/800"
     },
     "Fer à Repasser Vapeur": {
       "prompt": "Fer à repasser vapeur blanc et bleu posé verticalement sur une table à repasser avec de la vapeur s'échappant de la semelle, fond lumineux, 8k",
-      "url": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Fer_à_Repasser_Vapeu/800/800"
     },
     "Ventilateur Sur Pied Oscillant": {
       "prompt": "Ventilateur métallique sur pied moderne oscillant dans une pièce lumineuse épurée, rideaux légers gonflés par le vent en arrière-plan flou, 8k",
-      "url": "https://images.unsplash.com/photo-1618944847828-82e943c3bddf?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Ventilateur_Sur_Pied/800/800"
     },
     "Casque Audio Stéréo": {
       "prompt": "Casque audio circum-aural noir posé sur un support en bois, design moderne, arrière-plan de studio de musique flou, éclairage chaleureux, 8k",
-      "url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Casque_Audio_Stéréo/800/800"
     },
     "Rouge à Lèvres Rouge Velours": {
       "prompt": "Tube de rouge à lèvres rouge ouvert et dressé sur une surface miroir, fond de studio flou, reflets élégants de lumière douce, 8k",
-      "url": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Rouge_à_Lèvres_Rouge/800/800"
     },
     "Crème Hydratante Visage 50ml": {
       "prompt": "Pot de crème cosmétique ouvert avec une texture blanche et onctueuse, posé sur des pierres de basalte avec de l'eau, ambiance zen épurée, 8k",
-      "url": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Crème_Hydratante_Vis/800/800"
     },
     "Huile de Coco Vierge 250ml": {
       "prompt": "Flacon d'huile de coco vierge à côté d'une noix de coco ouverte sur une serviette de bain blanche, éclairage de spa chaleureux, 8k",
-      "url": "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Huile_de_Coco_Vierge/800/800"
     },
     "Shampoing Doux Aloe Vera": {
       "prompt": "Bouteille de shampoing transparente posée sur une étagère de douche en bambou, feuille d'aloe vera fraîche à côté, éclairage de salle de bain lumineux, 8k",
-      "url": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Shampoing_Doux_Aloe_/800/800"
     },
     "Gel Douche Hydratant 400ml": {
       "prompt": "Flacon de gel douche moderne au design minimaliste posé au milieu de gouttes d'eau scintillantes, fond carrelé clair de salle de bain, 8k",
-      "url": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Gel_Douche_Hydratant/800/800"
     },
     "Masque Purifiant Argile": {
       "prompt": "Tube de masque à l'argile et coupelle avec pâte d'argile verte, feuilles d'eucalyptus à côté, fond de pierre naturelle grise, 8k",
-      "url": "https://images.unsplash.com/photo-1567894192231-d22d9c12214d?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Masque_Purifiant_Arg/800/800"
     },
     "Parfum Patchouli & Vanille": {
       "prompt": "Flacon de parfum en verre lourd et facetté, posé sur du velours noir, gousses de vanille et feuilles de patchouli floues autour, éclairage studio mystérieux, 8k",
-      "url": "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Parfum_Patchouli___V/800/800"
     },
     "Vernis à Ongles Brillant": {
       "prompt": "Flacon de vernis à ongles de couleur rose poudré ouvert avec pinceau, gouttes de vernis sur une surface blanche laquée, éclairage studio doux, 8k",
-      "url": "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Vernis_à_Ongles_Bril/800/800"
     },
     "Lait Corporel Karité 250ml": {
       "prompt": "Flacon de lait corporel posé à côté d'une noix de karité brute et de beurre de karité, fond texturé beige épuré, éclairage de studio chaleureux, 8k",
-      "url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lait_Corporel_Karité/800/800"
     },
     "Crème Mains Réparatrice": {
       "prompt": "Tube de crème pour les mains posé à côté de fleurs de camomille blanche sur une table en bois clair, éclairage naturel du matin, bokeh, 8k",
-      "url": "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Crème_Mains_Réparatr/800/800"
     },
     "Eyeliner Noir Précision": {
       "prompt": "Stylo eyeliner noir pointé vers le haut, posé sur un fond géométrique de miroirs de maquillage, éclairage de studio contrasté, 8k",
-      "url": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Eyeliner_Noir_Précis/800/800"
     },
     "Mascara Volume Intense": {
       "prompt": "Mascara de luxe noir ouvert avec sa brosse volumatrice dressée, fond minimaliste beige texturé, éclairage de studio direct, 8k",
-      "url": "https://images.unsplash.com/photo-1631214524020-5e1841770f83?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Mascara_Volume_Inten/800/800"
     },
     "Gommage Corps Sucre & Café": {
       "prompt": "Pot de gommage corporel ouvert montrant les grains de café et de sucre, fèves de cacao à côté sur un plateau en bambou, éclairage de spa, 8k",
-      "url": "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Gommage_Corps_Sucre_/800/800"
     },
     "Palette d'Ombres à Paupières": {
       "prompt": "Palette de maquillage ouverte dévoilant 10 ombres à paupières irisées et mates, pinceaux professionnels disposés à côté, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Palette_d_Ombres_à_P/800/800"
     },
     "Crème Solaire Visage SPF50": {
       "prompt": "Tube de crème solaire posé sur une serviette de plage orange avec des coquillages à côté, fond ensoleillé flouté de mer azur, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Crème_Solaire_Visage/800/800"
     },
     "Jean Coupe Droite Denim": {
       "prompt": "Jean classique en denim bleu plié proprement sur une étagère en bois rustique, texture du coton visible de près, éclairage latéral naturel, 8k",
-      "url": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Jean_Coupe_Droite_De/800/800"
     },
     "T-Shirt Blanc Coton Bio": {
       "prompt": "T-shirt en coton blanc pur repassé à plat sur un fond texturé gris neutre, pliage géométrique propre, éclairage de studio uniforme, 8k",
-      "url": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/T_Shirt_Blanc_Coton_/800/800"
     },
     "Chemise en Lin Cintrée": {
       "prompt": "Chemise élégante en lin beige naturel suspendue à un cintre en bois, devant un mur blanc de style méditerranéen, éclairage de soleil doux, 8k",
-      "url": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Chemise_en_Lin_Cintr/800/800"
     },
     "Robe d'Été Imprimée": {
       "prompt": "Robe d'été fluide en coton à motifs floraux légers suspendue à un portant, fond d'appartement bohème lumineux, éclairage naturel, 8k",
-      "url": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Robe_d_Été_Imprimée/800/800"
     },
     "Baskets Sportives Homme": {
       "prompt": "Baskets de course blanches et grises modernes posées en biais sur un sol en béton ciré, éclairage de studio directionnel, bokeh prononcé, 8k",
-      "url": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Baskets_Sportives_Ho/800/800"
     },
     "Chaussures Cuir Classiques": {
       "prompt": "Chaussures classiques richelieu en cuir noir brillant ciré posées sur une table de présentation en verre, reflets de studio soignés, 8k",
-      "url": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Chaussures_Cuir_Clas/800/800"
     },
     "Veste Légère Casual": {
       "prompt": "Veste casual en toile de coton kaki pliée élégamment à côté de lunettes de soleil sur une table en bois clair, éclairage naturel, 8k",
-      "url": "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Veste_Légère_Casual/800/800"
     },
     "Sac Bandoulière Cuir": {
       "prompt": "Sac à main bandoulière en cuir grainé noir posé sur un guéridon en marbre blanc, arrière-plan de café parisien flouté, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Sac_Bandoulière_Cuir/800/800"
     },
     "Lunettes de Soleil UV400": {
       "prompt": "Lunettes de soleil de style rétro posées sur une table en bois près d'un chapeau de paille, reflets de piscine en arrière-plan flou, 8k",
-      "url": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lunettes_de_Soleil_U/800/800"
     },
     "Ceinture Noire en Cuir": {
       "prompt": "Ceinture noire classique en cuir véritable enroulée proprement, boucle en acier brossé brillante, fond gris texturé minimaliste, 8k",
-      "url": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Ceinture_Noire_en_Cu/800/800"
     },
     "Short Chino Classique": {
       "prompt": "Short chino beige en coton stretch plié à plat sur un plan de travail blanc, éclairage de studio doux, profondeur de champ, 8k",
-      "url": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Short_Chino_Classiqu/800/800"
     },
     "Polo Homme Sport Chic": {
       "prompt": "Polo bleu marine en piqué de coton suspendu sur un mur texturé de style loft industriel, éclairage naturel chaleureux de biais, 8k",
-      "url": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Polo_Homme_Sport_Chi/800/800"
     },
     "Chapeau de Paille Élégant": {
       "prompt": "Chapeau de paille tressé posé sur le pont en bois d'un bateau, mer turquoise floue et scintillante en arrière-plan, bokeh doux, 8k",
-      "url": "https://images.unsplash.com/photo-1533055640609-24b498dfd74c?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Chapeau_de_Paille_Él/800/800"
     },
     "Lot de 3 Chaussettes Coton": {
       "prompt": "Chaussettes de sport en coton blanc pliées proprement en lot de trois, fond blanc minimaliste, éclairage de studio doux, 8k",
-      "url": "https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lot_de_3_Chaussettes/800/800"
     },
     "Sweat à Capuche Molletonné": {
       "prompt": "Sweat à capuche gris chiné suspendu à un cintre métallique sur fond de briques blanches, éclairage naturel, bokeh, 8k",
-      "url": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Sweat_à_Capuche_Moll/800/800"
     },
     "Lampe de Chevet Design": {
       "prompt": "Lampe de chevet allumée diffusant une lumière chaude et tamisée sur une table de nuit en bois clair, lit douillet en arrière-plan flou, 8k",
-      "url": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Lampe_de_Chevet_Desi/800/800"
     },
     "Coussin Velours Décoratif": {
       "prompt": "Coussin carré en velours bleu canard posé élégamment sur le coin d'un fauteuil moderne gris, éclairage naturel chaleureux, 8k",
-      "url": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Coussin_Velours_Déco/800/800"
     },
     "Tapis de Salon Graphique": {
       "prompt": "Tapis tissé à motifs géométriques noirs et blancs posé sur un parquet en bois de chêne clair, pied de chaise en bois à côté, 8k",
-      "url": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Tapis_de_Salon_Graph/800/800"
     },
     "Horloge Murale Vintage": {
       "prompt": "Grande horloge murale ronde en métal noir et bois de style industriel fixée sur un mur en béton brut, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Horloge_Murale_Vinta/800/800"
     },
     "Table Basse Design": {
       "prompt": "Table basse ronde en bois et métal au centre d'un salon moderne, tasse à café et magazine posés sur le plateau, éclairage naturel, 8k",
-      "url": "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Table_Basse_Design/800/800"
     },
     "Miroir Rond Cadre Métal": {
       "prompt": "Miroir mural rond avec un cadre en laiton doré reflétant une pièce lumineuse avec une plante verte, fond de mur blanc épuré, 8k",
-      "url": "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Miroir_Rond_Cadre_Mé/800/800"
     },
     "Plante Artificielle Verte": {
       "prompt": "Plante verte artificielle réaliste en pot en céramique posée sur une étagère blanche, fond épuré blanc, éclairage naturel doux, 8k",
-      "url": "https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Plante_Artificielle_/800/800"
     },
     "Bougie Parfumée Lavande": {
       "prompt": "Bougie parfumée allumée dans un bocal en verre dépoli, flamme dansante, quelques brins de lavande séchée posés à côté, ambiance relaxante, 8k",
-      "url": "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Bougie_Parfumée_Lava/800/800"
     },
     "Housse de Couette Coton": {
       "prompt": "Lit double fait avec une parure de lit moderne en coton gris clair plissé avec goût, oreillers moelleux, éclairage de chambre matinal chaleureux, 8k",
-      "url": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Housse_de_Couette_Co/800/800"
     },
     "Paire de Rideaux Occultants": {
       "prompt": "Rideaux en tissu lourd occultant de couleur lin suspendus devant une grande fenêtre, filtrant doucement la lumière du jour, 8k",
-      "url": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Paire_de_Rideaux_Occ/800/800"
     },
     "Vase en Céramique Blanche": {
       "prompt": "Vase géométrique en céramique blanche mate avec quelques branches d'eucalyptus séchées, posé sur une commode en bois, éclairage naturel, 8k",
-      "url": "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Vase_en_Céramique_Bl/800/800"
     },
     "Poubelle Inox à Pédale 30L": {
       "prompt": "Poubelle à pédale moderne en acier inoxydable anti-traces posée dans le coin d'une cuisine épurée en marbre blanc, éclairage studio doux, 8k",
-      "url": "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Poubelle_Inox_à_Péda/800/800"
     },
     "Organisateur de Tiroirs (x4)": {
       "prompt": "Compartiments d'organisation de tiroirs en tissu gris contenant des vêtements pliés avec méthode, fond d'armoire épuré, éclairage uniforme, 8k",
-      "url": "https://images.unsplash.com/photo-1595341595378-29471165188f?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Organisateur_de_Tiro/800/800"
     },
     "Cadre Photo Bois Exotique": {
       "prompt": "Cadre photo rectangulaire en bois exotique foncé posé sur une console métallique noire, affiche d'art abstrait à l'intérieur, éclairage de studio, 8k",
-      "url": "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Cadre_Photo_Bois_Exo/800/800"
     },
     "Diffuseur de Parfum Rotin": {
       "prompt": "Flacon de parfum d'ambiance en verre lourd avec bâtonnets de rotin, posé dans une salle de bain de luxe en marbre, éclairage de spa doux, 8k",
-      "url": "https://images.unsplash.com/photo-1602928321679-560bb453f190?auto=format&fit=crop&w=800&q=80&h=800"
+      "url": "https://picsum.photos/seed/Diffuseur_de_Parfum_/800/800"
     }
   }
 }

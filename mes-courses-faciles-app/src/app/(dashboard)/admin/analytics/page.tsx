@@ -1,54 +1,50 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import prisma from "@/lib/prisma";
-import AnalyticsClient from "@/components/blocks/admin/AnalyticsClient";
+import { AnalyticsClientWrapper, AnalyticsSkeleton } from '@/components/blocks/admin/AnalyticsClientWrapper';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminAnalyticsPage() {
+async function AnalyticsDataFetcher() {
   let totalRevenue = 0;
   let totalOrders = 0;
   let averageBasket = 0;
   let revenueData: any[] = [];
   let categoryData: any[] = [];
 
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
   try {
-    // 1. Total revenue (paid / delivered non-cancelled orders)
-    const revenueResult = await prisma.order.aggregate({
-      _sum: { total: true },
-      where: {
-        status: { not: 'CANCELLED' }
-      }
-    });
+    // Parallélisation stricte des 5 requêtes indépendantes
+    const [revenueResult, totalOrdersCount, averageBasketResult, dbOrders, orderItems] = await Promise.all([
+      prisma.commande.aggregate({
+        _sum: { total: true },
+        where: { statut: { not: 'CANCELLED' } }
+      }),
+      prisma.commande.count(),
+      prisma.commande.aggregate({
+        _avg: { total: true },
+        where: { statut: { not: 'CANCELLED' } }
+      }),
+      prisma.commande.findMany({
+        where: { creeLe: { gte: sixMonthsAgo } },
+        select: { total: true, statut: true, creeLe: true }
+      }),
+      prisma.ligneCommande.findMany({
+        where: { commande: { statut: { not: 'CANCELLED' } } },
+        select: {
+          quantite: true,
+          prixUnitaire: true,
+          produit: { select: { categorie: true } }
+        }
+      })
+    ]);
+
     totalRevenue = revenueResult._sum.total || 0;
-
-    // 2. Total orders count
-    totalOrders = await prisma.order.count();
-
-    // 3. Average basket value
-    const averageBasketResult = await prisma.order.aggregate({
-      _avg: { total: true },
-      where: {
-        status: { not: 'CANCELLED' }
-      }
-    });
+    totalOrders = totalOrdersCount;
     averageBasket = averageBasketResult._avg.total || 0;
-
-    // 4. Monthly revenues and orders for the last 6 months
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-    sixMonthsAgo.setDate(1);
-    sixMonthsAgo.setHours(0, 0, 0, 0);
-
-    const dbOrders = await prisma.order.findMany({
-      where: {
-        createdAt: { gte: sixMonthsAgo }
-      },
-      select: {
-        total: true,
-        status: true,
-        createdAt: true
-      }
-    });
 
     // Generate month slots
     interface MonthSlot {
@@ -74,12 +70,12 @@ export default async function AdminAnalyticsPage() {
     }
 
     dbOrders.forEach(order => {
-      const date = new Date(order.createdAt);
+      const date = new Date(order.creeLe);
       const mIndex = date.getMonth();
       const yIndex = date.getFullYear();
       const match = monthsList.find(m => m.monthIndex === mIndex && m.year === yIndex);
       if (match) {
-        if (order.status !== 'CANCELLED') {
+        if (order.statut !== 'CANCELLED') {
           match['Revenus (CFA)'] += order.total;
         }
         match['Commandes'] += 1;
@@ -92,26 +88,10 @@ export default async function AdminAnalyticsPage() {
       'Commandes': m['Commandes']
     }));
 
-    // 5. Sales by product category
-    const orderItems = await prisma.orderItem.findMany({
-      where: {
-        order: {
-          status: { not: 'CANCELLED' }
-        }
-      },
-      select: {
-        quantity: true,
-        price: true,
-        product: {
-          select: { category: true }
-        }
-      }
-    });
-
     const categorySum: Record<string, number> = {};
     orderItems.forEach(item => {
-      const cat = item.product?.category || 'Autre';
-      const val = item.quantity * item.price;
+      const cat = item.produit?.categorie || 'Autre';
+      const val = item.quantite * item.prixUnitaire;
       categorySum[cat] = (categorySum[cat] || 0) + val;
     });
 
@@ -147,12 +127,20 @@ export default async function AdminAnalyticsPage() {
   }
 
   return (
-    <AnalyticsClient
+    <AnalyticsClientWrapper
       totalRevenue={totalRevenue}
       totalOrders={totalOrders}
       averageBasket={averageBasket}
       revenueData={revenueData}
       categoryData={categoryData}
     />
+  );
+}
+
+export default function AdminAnalyticsPage() {
+  return (
+    <Suspense fallback={<AnalyticsSkeleton />}>
+      <AnalyticsDataFetcher />
+    </Suspense>
   );
 }

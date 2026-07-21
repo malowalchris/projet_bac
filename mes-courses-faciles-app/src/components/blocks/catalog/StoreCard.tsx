@@ -1,5 +1,3 @@
-"use client";
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { MapPin, Star, ArrowRight } from 'lucide-react';
@@ -18,10 +16,11 @@ interface StoreCardProps {
   deliveryTime: string;
   categories: string[];
   isFeatured?: boolean;
+  priority?: boolean;
 }
 
 export const StoreCard = ({
-  id, name, image, location, rating, deliveryTime, categories, isFeatured = false
+  id, name, image, location, rating, deliveryTime, categories, isFeatured = false, priority = false
 }: StoreCardProps) => {
 
   // Résolution centralisée : null/vide → placeholder SVG local
@@ -46,10 +45,10 @@ export const StoreCard = ({
             <div className="absolute inset-0 z-0 bg-muted overflow-hidden relative h-full w-full">
               <ImageWithLoader
                 src={resolvedImage}
-                alt={name}
+                alt={name || "Magasin"}
                 type="store"
                 objectFit="cover"
-                priority
+                priority={isFeatured || priority}
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="absolute inset-0 group-hover:scale-105 transition-transform duration-700 ease-out transform-gpu"
               />
@@ -115,9 +114,10 @@ export const StoreCard = ({
           <div className="relative h-36 w-full overflow-hidden bg-muted">
             <ImageWithLoader
               src={resolvedImage}
-              alt={name}
+              alt={name || "Magasin"}
               type="store"
               objectFit="cover"
+              priority={isFeatured || priority}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="absolute inset-0 group-hover:scale-105 transition-transform duration-500 ease-out transform-gpu"
             />

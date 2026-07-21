@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('mcf_user_data');
     localStorage.removeItem('mcf_cart');
     await logoutAction();
-    router.push('/');
-    router.refresh();
+    if (router?.push) router.push('/');
+    if (typeof router?.refresh === 'function') router.refresh();
   };
 
   return (

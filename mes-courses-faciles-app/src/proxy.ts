@@ -38,6 +38,12 @@ export async function proxy(request: NextRequest) {
     rateLimitMap.set(ip, recentTimestamps);
   }
 
+  // Pour toutes les autres routes API (/api/products, /api/stores, /api/search/suggestions, etc.),
+  // on ne vérifie pas le JWT dans le proxy pour éviter de ralentir chaque requête de données/autocomplétion.
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get('mcf_jwt_session')?.value;
 
   const PROTECTED_ROUTES = [
@@ -93,13 +99,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/',
-    '/search/:path*',
-    '/store/:path*',
-    '/product/:path*',
-    '/profile/:path*',
-    '/checkout/:path*',
-    '/favorites/:path*',
-    '/admin/:path*'
+    /*
+     * Exclut impérativement :
+     * - _next/static (fichiers statiques JS/CSS du bundle)
+     * - _next/image (optimisation d'images)
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - images et extensions statiques (.svg, .png, .jpg, .jpeg, .gif, .webp, .ico, .css, .js)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
   ],
 };
